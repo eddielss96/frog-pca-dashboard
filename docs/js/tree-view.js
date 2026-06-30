@@ -13,10 +13,12 @@
   }
 
   var TreeView = {
-    tree: null, el: null, model: null,
+    tree: null, el: null, host: null, model: null,
     nodeIdByTip: {}, // tip_label -> phylocanvas node id
     supported: true,
     _suppress: false,
+    mode: "clado",          // "clado"=等距（忽略分支長度，鋪滿全寬）| "phylo"=依分支長度
+    sourcePhylo: null, sourceClado: null,
 
     init: function () {
       this.el = document.getElementById("tree-view");
@@ -33,7 +35,24 @@
         if (global.ResizeObserver) {
           this._ro = new ResizeObserver(function () { self.resize(); });
         }
+        // 視窗縮放時自動重新貼合（debounce）
+        global.addEventListener("resize", function () {
+          clearTimeout(self._wt); self._wt = setTimeout(function () { self.resize(); }, 120);
+        });
       }
+    },
+
+    // 切換「等距 / 分支長度」並重新貼合
+    setMode: function (mode) {
+      if (mode === this.mode || !this.tree) { this.mode = mode; return; }
+      this.mode = mode;
+      var src = (mode === "phylo") ? this.sourcePhylo : this.sourceClado;
+      var self = this;
+      try { this.tree.setProps({ source: src }); } catch (e) { return this.build(); }
+      // 來源改變後重建映射/著色、重新貼合、復原目前高亮
+      this.buildMapsAndStyles();
+      requestAnimationFrame(function () { self.resize(); self.applyHighlight(Store.highlight); });
+      setTimeout(function () { self.resize(); }, 120);
     },
 
     setData: function (model) {
@@ -45,6 +64,8 @@
       }
       this.fallbackEl.hidden = true;
       this.el.hidden = false;
+      this.sourcePhylo = model.treeNewick;
+      this.sourceClado = stripBranchLengths(model.treeNewick); // 等距：移除 :分支長度
       try {
         this.build();
       } catch (e) {
@@ -65,8 +86,9 @@
                    height: Math.max(420, Math.round(rect.height) || 480) };
 
       var self = this, model = this.model;
+      var source = (this.mode === "phylo") ? this.sourcePhylo : this.sourceClado;
       this.tree = new PhylocanvasGL(this.el, {
-        source: model.treeNewick,
+        source: source || model.treeNewick,
         size: size,
         type: TreeTypes.Rectangular || "rc",
         showLabels: false,
@@ -89,7 +111,7 @@
 
       if (this._ro) { try { this._ro.disconnect(); this._ro.observe(this.host); } catch (e) {} }
       // 待容器尺寸穩定後填滿畫面（避免只佔左側一小塊 / 上下被裁切）
-      requestAnimationFrame(function () { self.resize(); });
+      requestAnimationFrame(function () { self.resize(); self.applyHighlight(Store.highlight); });
       setTimeout(function () { self.resize(); }, 120);
     },
 
@@ -182,6 +204,11 @@
       } catch (e) { console.warn("樹 PNG 匯出失敗", e); }
     }
   };
+
+  // 移除 Newick 的分支長度（:數字，含科學記號），得到等距 cladogram 來源
+  function stripBranchLengths(nwk) {
+    return nwk.replace(/:[-+0-9.eE]+/g, "");
+  }
 
   function collectLeaves(node) {
     if (!node) return [];

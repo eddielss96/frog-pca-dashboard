@@ -86,6 +86,12 @@
     if (dlTree) dlTree.addEventListener("click", function () { FD.TreeView.exportPNG(); });
     var fitTree = document.querySelector(".fit-tree");
     if (fitTree) fitTree.addEventListener("click", function () { FD.TreeView.resize(); });
+    var modeSeg = document.getElementById("tree-mode");
+    if (modeSeg) modeSeg.addEventListener("click", function (e) {
+      var btn = e.target.closest(".seg-btn"); if (!btn) return;
+      modeSeg.querySelectorAll(".seg-btn").forEach(function (b) { b.classList.toggle("active", b === btn); });
+      FD.TreeView.setMode(btn.dataset.mode);
+    });
   }
 
   function main() {

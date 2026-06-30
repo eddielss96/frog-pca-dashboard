@@ -107,6 +107,13 @@ h1, h2, h3 { font-weight: 650; letter-spacing: .01em; }
 .axis-ctrls label { display: inline-flex; align-items: center; gap: 4px; }
 .axis-select { font-size: 12px; padding: 4px 6px; border: 1px solid var(--line-strong); border-radius: 7px; background: #fff; color: var(--ink); }
 
+/* 分段控制（樹顯示模式）*/
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: #fff; }
+.seg-btn { border: none; background: #fff; color: var(--ink-soft); font-size: 12px; font-weight: 550; padding: 5px 11px; cursor: pointer; transition: background .12s, color .12s; }
+.seg-btn + .seg-btn { border-left: 1px solid var(--line-strong); }
+.seg-btn:hover { background: #f3f6f9; }
+.seg-btn.active { background: var(--accent); color: #fff; }
+
 /* PCA 並排 */
 .pca-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
 .pca-panel .plot { height: 400px; }

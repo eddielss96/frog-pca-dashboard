@@ -91,7 +91,11 @@
       <div class="panel-head">
         <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
         <div class="axis-ctrls">
-          <button class="btn small fit-tree" title="重設視角、填滿畫面">⤢ 重設視角</button>
+          <div class="seg" id="tree-mode" role="group" aria-label="樹顯示模式">
+            <button class="seg-btn active" data-mode="clado" title="忽略分支長度、依拓樸均勻鋪滿">等距</button>
+            <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製">分支長度</button>
+          </div>
+          <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
           <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>
         </div>
       </div>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PCA Dashboard — 蝌蚪 / 成體形態空間與親緣樹</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='11' cy='15' r='7' fill='%230072B2'/%3E%3Crect x='17' y='9' width='12' height='12' fill='%23E69F00'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- 所有函式庫一律 vendor 在本地，禁用 CDN（永久保存、可離線開啟）-->
+  <script src="vendor/jszip/jszip-3.10.1.min.js"></script>
+  <script src="vendor/plotly/plotly-2.35.2.min.js"></script>
+  <script src="vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>形態空間 PCA Dashboard</h1>
+      <p id="dataset-subtitle" class="subtitle">蝌蚪 PCA · 成體 PCA · 親緣關係樹（三視圖連動）</p>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <input id="search-input" type="search" placeholder="搜尋物種…" autocomplete="off" aria-label="搜尋物種" />
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="clear-btn" class="btn" title="清除目前的選取與高亮">清除選取</button>
+      <label class="btn file-btn">
+        載入統一 Zip
+        <input id="zip-input" type="file" accept=".zip" hidden />
+      </label>
+    </div>
+  </header>
+
+  <!-- 載入 / 錯誤狀態 -->
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+  <!-- 起始畫面（尚未載入資料時）-->
+  <section id="welcome" class="welcome">
+    <div class="welcome-card">
+      <h2>載入資料以開始</h2>
+      <p>本工具讀取「統一 Zip」格式（由 R / Python / CSV 匯出器產生）。所有統計已在
+        匯出端算好，瀏覽器端只負責互動式呈現。</p>
+      <p class="dim">拖放 .zip 到此處，或用右上角「載入統一 Zip」。</p>
+      <button id="demo-btn" class="btn primary">載入青蛙範例資料</button>
+      <p id="demo-hint" class="dim small">（範例：Sherratt et al. 2017，澳洲青蛙與蝌蚪，166 物種）</p>
+    </div>
+  </section>
+
+  <!-- 主介面 -->
+  <main id="dashboard" class="dashboard" hidden>
+    <section class="panel pca-panel">
+      <div class="panel-head">
+        <h2 id="tadpole-title">蝌蚪 PCA</h2>
+        <div class="axis-ctrls">
+          <label>X <select id="tadpole-x" class="axis-select"></select></label>
+          <label>Y <select id="tadpole-y" class="axis-select"></select></label>
+          <button class="btn small dl" data-view="tadpole" title="下載此圖 PNG">PNG</button>
+        </div>
+      </div>
+      <div id="tadpole-plot" class="plot"></div>
+      <div id="tadpole-scree" class="scree"></div>
+    </section>
+
+    <section class="panel pca-panel">
+      <div class="panel-head">
+        <h2 id="adult-title">成體 PCA</h2>
+        <div class="axis-ctrls">
+          <label>X <select id="adult-x" class="axis-select"></select></label>
+          <label>Y <select id="adult-y" class="axis-select"></select></label>
+          <button class="btn small dl" data-view="adult" title="下載此圖 PNG">PNG</button>
+        </div>
+      </div>
+      <div id="adult-plot" class="plot"></div>
+      <div id="adult-scree" class="scree"></div>
+    </section>
+
+    <section class="panel tree-panel">
+      <div class="panel-head">
+        <h2>親緣關係樹</h2>
+        <div class="axis-ctrls">
+          <button class="btn small dl-tree" title="下載樹 PNG">PNG</button>
+        </div>
+      </div>
+      <div id="tree-view" class="tree"></div>
+      <div id="tree-fallback" class="tree-fallback" hidden>
+        <p>⚠️ 此環境無法使用 WebGL，無法繪製互動式親緣樹。</p>
+        <p class="dim">PCA 圖仍可正常使用；點擊樹分支高亮 clade 的功能在此環境停用。</p>
+      </div>
+    </section>
+
+    <aside class="panel legend-panel">
+      <div class="panel-head"><h2>圖例（亞科）</h2></div>
+      <ul id="legend" class="legend"></ul>
+      <p class="dim small">顏色之外也以<strong>形狀</strong>區辨（色盲友善）。點圖例可切換顯示。</p>
+      <div id="dataset-meta" class="dataset-meta"></div>
+    </aside>
+  </main>
+
+  <!-- 物種資訊視窗 -->
+  <div id="info-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-name">
+      <button class="modal-close" data-close aria-label="關閉">×</button>
+      <div class="info-body">
+        <div class="info-image-wrap"><img id="info-image" alt="" /></div>
+        <div class="info-text">
+          <h3 id="info-name"></h3>
+          <div id="info-group" class="info-group"></div>
+          <table id="info-table" class="info-table"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 階段四烤入的資料（若存在則自動載入，開啟即看；無此檔則顯示上傳畫面）-->
+  <script src="data/baked.js" onerror="window.__noBaked=1"></script>
+  <script src="js/state.js"></script>
+  <script src="js/zip-loader.js"></script>
+  <script src="js/legend.js"></script>
+  <script src="js/pca-view.js"></script>
+  <script src="js/tree-view.js"></script>
+  <script src="js/info-panel.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

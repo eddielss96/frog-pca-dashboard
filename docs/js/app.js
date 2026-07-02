@@ -74,12 +74,12 @@
     document.getElementById("clear-btn").addEventListener("click", function () {
       Store.clearHighlight();
     });
-    document.querySelectorAll(".dl").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var vid = btn.dataset.view;
-        Plotly.downloadImage(document.getElementById(vid + "-plot"), {
-          format: "png", width: 1000, height: 800, filename: vid + "_pca"
-        });
+    // PCA 面板為動態產生，用事件委派綁定下載
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".dl"); if (!btn) return;
+      var vid = btn.dataset.view;
+      Plotly.downloadImage(document.getElementById(vid + "-plot"), {
+        format: "png", width: 1000, height: 800, filename: vid + "_pca"
       });
     });
     var dlTree = document.querySelector(".dl-tree");

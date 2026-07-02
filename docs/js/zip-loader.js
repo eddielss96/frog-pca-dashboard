@@ -118,18 +118,23 @@
         }));
       });
 
-      // tree + crosswalk
+      // tree + crosswalk（可選：沒有樹的純 PCA 資料集也支援）
       var treeMeta = manifest.tree || {};
-      jobs.push(readText(treeMeta.path).then(function (t) { model.treeNewick = t; }));
-      jobs.push(readText(treeMeta.tip_id_map).then(function (t) {
-        var cw = toObjects(t);
-        model.tipToSpecies = {};
-        model.speciesToTip = {};
-        cw.rows.forEach(function (r) {
-          model.tipToSpecies[r.tip_label] = r.species_id;
-          model.speciesToTip[r.species_id] = r.tip_label;
-        });
-      }));
+      model.treeNewick = null;
+      model.tipToSpecies = {};
+      model.speciesToTip = {};
+      model.hasTree = !!(treeMeta.path && zip.file(treeMeta.path));
+      if (model.hasTree) {
+        jobs.push(readText(treeMeta.path).then(function (t) { model.treeNewick = t; }));
+        if (treeMeta.tip_id_map && zip.file(treeMeta.tip_id_map)) {
+          jobs.push(readText(treeMeta.tip_id_map).then(function (t) {
+            toObjects(t).rows.forEach(function (r) {
+              model.tipToSpecies[r.tip_label] = r.species_id;
+              model.speciesToTip[r.species_id] = r.tip_label;
+            });
+          }));
+        }
+      }
 
       // images（可選）
       model.imageURLs = {};
@@ -161,8 +166,10 @@
     var treeIds = new Set(Object.values(model.tipToSpecies));
     var problems = [];
 
-    treeIds.forEach(function (id) { if (!taxaIds.has(id)) problems.push("樹物種不在 taxa：" + id); });
-    taxaIds.forEach(function (id) { if (!treeIds.has(id)) problems.push("taxa 物種不在樹：" + id); });
+    if (model.hasTree && treeIds.size) {
+      treeIds.forEach(function (id) { if (!taxaIds.has(id)) problems.push("樹物種不在 taxa：" + id); });
+      taxaIds.forEach(function (id) { if (!treeIds.has(id)) problems.push("taxa 物種不在樹：" + id); });
+    }
     model.viewOrder.forEach(function (vid) {
       model.views[vid].ids.forEach(function (id) {
         if (!taxaIds.has(id)) problems.push("view[" + vid + "] 物種不在 taxa：" + id);

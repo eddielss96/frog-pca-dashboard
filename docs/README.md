@@ -22,6 +22,18 @@
 - `vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js`（含 deck.gl/luma.gl，
   以 esbuild 打包成單一 IIFE；重建見 `scripts/vendor_libs.sh`）
 
+## 建立精靈（builder.html）— 用自己的資料做一個
+`builder.html` 讓使用者**在瀏覽器內**把自己的 PCA 資料變成一個無伺服器互動網站，
+全程不需後端：
+1. 上傳「物種 × PC 分數 CSV」（每個視圖一份）、分類 CSV（自動偵測 species_id／
+   顯示名稱／分組欄）、以及可選的 Newick 樹檔。
+2. 按「建立預覽」即時看到互動式 PCA（＋樹）。
+3. 按「打包成 GitHub Pages 網站」→ 瀏覽器內產生一包自包含站台 zip，並彈出圖文教學，
+   引導把 zip 內檔案上傳到 GitHub、啟用 Pages，即成為自己的永久網頁。
+
+> 統計不在瀏覽器做：CSV 路徑的前提是 PCA 分數已算好。需要跑 GPA/PCA 的原始資料
+> （尤其 R/geomorph）請用 `exporters/` 的本機匯出器先產生統一 Zip，再用本精靈預覽/打包。
+
 ## 本地預覽
 ```
 cd docs && python3 -m http.server 8099

@@ -57,6 +57,14 @@
 
     setData: function (model) {
       this.model = model;
+      var panel = this.host && this.host.closest(".tree-panel");
+      // 沒有樹的純 PCA 資料集：整個樹面板隱藏
+      if (!model.hasTree || !model.treeNewick) {
+        if (panel) panel.hidden = true;
+        if (this.tree) { try { this.tree.destroy(); } catch (e) {} this.tree = null; }
+        return;
+      }
+      if (panel) panel.hidden = false;
       if (!this.supported) {
         this.el.hidden = true;
         this.fallbackEl.hidden = false;

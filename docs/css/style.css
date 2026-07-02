@@ -87,6 +87,7 @@ h1, h2, h3 { font-weight: 650; letter-spacing: .01em; }
 .welcome-card h2 { margin: 0 0 10px; font-size: 22px; }
 .welcome-card p { color: var(--ink-soft); margin: 8px 0; }
 .welcome-card .btn.primary { margin-top: 14px; font-size: 15px; padding: 11px 20px; }
+.welcome-sep { border: none; border-top: 1px solid var(--line); margin: 22px 0 14px; }
 .dim { color: var(--dim); }
 .small { font-size: 12px; }
 
@@ -185,7 +186,42 @@ h1, h2, h3 { font-weight: 650; letter-spacing: .01em; }
 .info-table tr:last-child td { border-bottom: none; }
 .info-table td.k { color: var(--dim); width: 40%; }
 
+/* ---- 建立精靈 ---- */
+.builder { flex: 1; display: grid; grid-template-columns: 400px 1fr; gap: var(--gap); padding: var(--gap); min-height: 0; overflow: hidden; }
+.builder-form { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: auto; padding: 6px 4px; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps > li { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.steps h3 { margin: 0 0 8px; font-size: 14px; }
+.fld { display: block; font-size: 12px; color: var(--ink-soft); margin: 7px 0; }
+.fld input[type=text], .fld textarea, .fld select {
+  display: block; width: 100%; margin-top: 3px; padding: 7px 9px; font-size: 13px;
+  border: 1px solid var(--line-strong); border-radius: 7px; background: #fff; color: var(--ink);
+}
+.fld input[type=file] { display: block; width: 100%; margin-top: 4px; font-size: 12px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.view-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; margin: 8px 0; padding: 8px; background: #f7f9fb; border-radius: 8px; }
+.view-row .v-label { padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: 12px; }
+.view-row .mini { font-size: 11px; color: var(--dim); }
+.view-row .mini input[type=file] { font-size: 11px; max-width: 130px; }
+.chips-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip-pick { font-size: 12px; padding: 3px 9px; border: 1px solid var(--line-strong); border-radius: 999px; cursor: pointer; background: #fff; }
+.builder-actions { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
+.builder-actions .btn { justify-content: center; }
+.build-msg { padding: 0 16px 16px; font-size: 12px; }
+.build-msg .ok { color: #1c7a45; } .build-msg .err { color: #a01919; }
+.build-msg .warn { margin-top: 6px; color: #8a6d00; background: #fff7e0; padding: 8px; border-radius: 8px; }
+.builder-preview { position: relative; overflow: auto; }
+.builder-preview .dashboard { padding: 0; }
+.preview-empty { height: 100%; display: grid; place-items: center; text-align: center; color: var(--dim); }
+.preview-empty .big { font-size: 18px; color: var(--ink-soft); }
+.modal-card.wide { width: min(680px, 94vw); }
+.tut-steps { line-height: 1.7; padding-left: 20px; }
+.tut-steps li { margin: 8px 0; }
+.tut-steps code, .tut-actions + p code, p code { background: #f0f3f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.tut-actions { margin-top: 14px; text-align: right; }
+
 /* ---- 響應式 ---- */
+@media (max-width: 1024px) { .builder { grid-template-columns: 1fr; overflow: auto; } }
 @media (max-width: 920px) {
   .pca-row { grid-template-columns: 1fr; }
   .dataset-meta { max-width: 100%; text-align: left; }

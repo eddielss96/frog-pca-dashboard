@@ -57,6 +57,14 @@
 
     setData: function (model) {
       this.model = model;
+      var panel = this.host && this.host.closest(".tree-panel");
+      // 沒有樹的純 PCA 資料集：整個樹面板隱藏
+      if (!model.hasTree || !model.treeNewick) {
+        if (panel) panel.hidden = true;
+        if (this.tree) { try { this.tree.destroy(); } catch (e) {} this.tree = null; }
+        return;
+      }
+      if (panel) panel.hidden = false;
       if (!this.supported) {
         this.el.hidden = true;
         this.fallbackEl.hidden = false;
@@ -65,7 +73,7 @@
       this.fallbackEl.hidden = true;
       this.el.hidden = false;
       this.sourcePhylo = model.treeNewick;
-      this.sourceClado = stripBranchLengths(model.treeNewick); // 等距：移除 :分支長度
+      this.sourceClado = buildAlignedCladogram(model.treeNewick); // 對齊型 cladogram
       try {
         this.build();
       } catch (e) {
@@ -205,9 +213,56 @@
     }
   };
 
-  // 移除 Newick 的分支長度（:數字，含科學記號），得到等距 cladogram 來源
-  function stripBranchLengths(nwk) {
-    return nwk.replace(/:[-+0-9.eE]+/g, "");
+  // --- Newick 解析／重寫：產生「對齊型 cladogram」 ---
+  // 依節點階層（rank）重算分支長度，使所有 tips 對齊右緣、層級均勻分佈，
+  // 讓整棵樹填滿成方正區塊，比原始長短枝更好辨認。
+  function parseNewick(str) {
+    var s = str.trim().replace(/;\s*$/, ""), pos = 0;
+    function node() {
+      var n = { children: [], name: "", length: null };
+      if (s[pos] === "(") {
+        pos++;
+        for (;;) {
+          n.children.push(node());
+          if (s[pos] === ",") { pos++; continue; }
+          break;
+        }
+        if (s[pos] === ")") pos++;
+      }
+      var nm = "";
+      while (pos < s.length && ":,()".indexOf(s[pos]) < 0) nm += s[pos++];
+      n.name = nm;
+      if (s[pos] === ":") {
+        pos++; var num = "";
+        while (pos < s.length && ",()".indexOf(s[pos]) < 0) num += s[pos++];
+        n.length = parseFloat(num);
+      }
+      return n;
+    }
+    return node();
+  }
+  function rankHeight(n) {
+    if (!n.children.length) { n._h = 0; return 0; }
+    var mx = 0;
+    n.children.forEach(function (c) { mx = Math.max(mx, rankHeight(c)); });
+    n._h = mx + 1; return n._h;
+  }
+  function serializeAligned(n, parentH) {
+    var s = "";
+    if (n.children.length)
+      s += "(" + n.children.map(function (c) { return serializeAligned(c, n._h); }).join(",") + ")";
+    s += n.name;
+    if (parentH != null) s += ":" + (parentH - n._h); // 分支長度 = 父階層 − 本階層（>0）
+    return s;
+  }
+  function buildAlignedCladogram(nwk) {
+    try {
+      var root = parseNewick(nwk);
+      rankHeight(root);
+      return serializeAligned(root, null) + ";";
+    } catch (e) {
+      return nwk.replace(/:[-+0-9.eE]+/g, ""); // 後備：至少移除分支長度
+    }
   }
 
   function collectLeaves(node) {

@@ -27,6 +27,7 @@
         載入統一 Zip
         <input id="zip-input" type="file" accept=".zip" hidden />
       </label>
+      <a class="btn primary" href="builder.html" title="上傳自己的 PCA 資料、打包成網站">建立精靈</a>
     </div>
   </header>
 
@@ -42,39 +43,16 @@
       <p class="dim">拖放 .zip 到此處，或用右上角「載入統一 Zip」。</p>
       <button id="demo-btn" class="btn primary">載入青蛙範例資料</button>
       <p id="demo-hint" class="dim small">（範例：Sherratt et al. 2017，澳洲青蛙與蝌蚪，166 物種）</p>
+      <hr class="welcome-sep" />
+      <p class="dim small">想用<strong>自己的 PCA 資料</strong>做一個像這樣的網頁？</p>
+      <a class="btn" href="builder.html">用建立精靈打包成自己的網站 →</a>
     </div>
   </section>
 
   <!-- 主介面 -->
   <main id="dashboard" class="dashboard" hidden>
-    <!-- 兩張 PCA 並排，方便比較蝌蚪 vs 成體形態空間 -->
-    <div class="pca-row">
-      <section class="panel pca-panel">
-        <div class="panel-head">
-          <h2 id="tadpole-title">蝌蚪 PCA</h2>
-          <div class="axis-ctrls">
-            <label>X <select id="tadpole-x" class="axis-select"></select></label>
-            <label>Y <select id="tadpole-y" class="axis-select"></select></label>
-            <button class="btn small dl" data-view="tadpole" title="下載此圖 PNG">↓ PNG</button>
-          </div>
-        </div>
-        <div id="tadpole-plot" class="plot"></div>
-        <div class="scree-wrap"><span class="scree-label">各 PC 變異解釋</span><div id="tadpole-scree" class="scree"></div></div>
-      </section>
-
-      <section class="panel pca-panel">
-        <div class="panel-head">
-          <h2 id="adult-title">成體 PCA</h2>
-          <div class="axis-ctrls">
-            <label>X <select id="adult-x" class="axis-select"></select></label>
-            <label>Y <select id="adult-y" class="axis-select"></select></label>
-            <button class="btn small dl" data-view="adult" title="下載此圖 PNG">↓ PNG</button>
-          </div>
-        </div>
-        <div id="adult-plot" class="plot"></div>
-        <div class="scree-wrap"><span class="scree-label">各 PC 變異解釋</span><div id="adult-scree" class="scree"></div></div>
-      </section>
-    </div>
+    <!-- PCA 視圖依 manifest 動態產生（支援任意數量的視圖）-->
+    <div class="pca-row" id="pca-row"></div>
 
     <!-- 橫向圖例條（色盲友善：色 + 形）+ 資料集資訊 -->
     <section class="panel legend-bar">
@@ -92,8 +70,8 @@
         <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
         <div class="axis-ctrls">
           <div class="seg" id="tree-mode" role="group" aria-label="樹顯示模式">
-            <button class="seg-btn active" data-mode="clado" title="忽略分支長度、依拓樸均勻鋪滿">等距</button>
-            <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製">分支長度</button>
+            <button class="seg-btn active" data-mode="clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
+            <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
           </div>
           <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
           <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>

@@ -161,16 +161,47 @@
     return view.axisLabels[pc] || pc;
   }
 
-  // 模組層級：建立兩個視圖並接上 Store
+  // 依 manifest 動態建立每個視圖的面板 DOM
+  function buildPanel(row, view) {
+    var vid = view.id;
+    var sec = document.createElement("section");
+    sec.className = "panel pca-panel";
+    sec.innerHTML =
+      '<div class="panel-head">' +
+        '<h2 id="' + vid + '-title">' + esc(view.label) + '</h2>' +
+        '<div class="axis-ctrls">' +
+          '<label>X <select id="' + vid + '-x" class="axis-select"></select></label>' +
+          '<label>Y <select id="' + vid + '-y" class="axis-select"></select></label>' +
+          '<button class="btn small dl" data-view="' + vid + '" title="下載此圖 PNG">↓ PNG</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="' + vid + '-plot" class="plot"></div>' +
+      '<div class="scree-wrap"><span class="scree-label">各 PC 變異解釋</span><div id="' + vid + '-scree" class="scree"></div></div>';
+    row.appendChild(sec);
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
   var views = {};
   function init() {
-    views.tadpole = new PCAView({ viewId: "tadpole", plotId: "tadpole-plot", screeId: "tadpole-scree", xId: "tadpole-x", yId: "tadpole-y", titleId: "tadpole-title" });
-    views.adult = new PCAView({ viewId: "adult", plotId: "adult-plot", screeId: "adult-scree", xId: "adult-x", yId: "adult-y", titleId: "adult-title" });
-
     Store.on("data", function (model) {
-      Object.keys(views).forEach(function (k) {
-        if (model.views[k]) views[k].setData(model);
+      var row = document.getElementById("pca-row");
+      row.innerHTML = "";
+      views = {};
+      // 視圖數量 1~2 個並排；更多則自動換行（CSS grid 已處理）
+      row.style.gridTemplateColumns = model.viewOrder.length === 1 ? "1fr" : "1fr 1fr";
+      model.viewOrder.forEach(function (vid) {
+        buildPanel(row, model.views[vid]);
       });
+      model.viewOrder.forEach(function (vid) {
+        views[vid] = new PCAView({ viewId: vid, plotId: vid + "-plot", screeId: vid + "-scree",
+                                   xId: vid + "-x", yId: vid + "-y", titleId: vid + "-title" });
+        views[vid].setData(model);
+      });
+      global.FrogDash.pcaViews = views;
     });
     Store.on("highlight", function (p) {
       Object.keys(views).forEach(function (k) { views[k].applyHighlight(p.ids); });

@@ -1,0 +1,47 @@
+# 部署 docs/ 到 GitHub Pages（自控流程，取代內建的 branch 部署）。
+# 只上傳 docs/（不是整個 repo），避免 Jekyll 處理大量檔案而逾時；
+# 網站落在網址根目錄（index.html 即首頁），並使用最新 action 版本。
+#
+# 啟用方式（一次性）：GitHub → Settings → Pages → Build and deployment →
+#   Source 選「GitHub Actions」。之後每次 push 到 main（且動到 docs/）就會自動部署。
+name: Deploy dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時間只跑一個部署；新的取代排隊中的舊的
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload docs/ as the site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

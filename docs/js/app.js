@@ -86,6 +86,11 @@
     if (dlTree) dlTree.addEventListener("click", function () { FD.TreeView.exportPNG(); });
     var fitTree = document.querySelector(".fit-tree");
     if (fitTree) fitTree.addEventListener("click", function () { FD.TreeView.resize(); });
+    var expandTree = document.querySelector(".expand-tree");
+    if (expandTree) expandTree.addEventListener("click", function () {
+      var expanded = FD.TreeView.toggleExpandAll();
+      expandTree.textContent = expanded ? "收合深層" : "展開全部";
+    });
     var modeSeg = document.getElementById("tree-mode");
     if (modeSeg) modeSeg.addEventListener("click", function (e) {
       var btn = e.target.closest(".seg-btn"); if (!btn) return;

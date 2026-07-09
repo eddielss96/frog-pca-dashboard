@@ -22,6 +22,7 @@
         <input id="search-input" type="search" placeholder="搜尋物種…" autocomplete="off" aria-label="搜尋物種" />
         <ul id="search-results" class="search-results" hidden></ul>
       </div>
+      <button id="side-panel-toggle" class="btn" title="開關側邊物種資訊面板">📋 側邊面板</button>
       <button id="clear-btn" class="btn" title="清除目前的選取與高亮">清除選取</button>
       <label class="btn file-btn">
         載入統一 Zip
@@ -54,12 +55,16 @@
     <!-- PCA 視圖依 manifest 動態產生（支援任意數量的視圖）-->
     <div class="pca-row" id="pca-row"></div>
 
-    <!-- 橫向圖例條（色盲友善：色 + 形）+ 資料集資訊 -->
+    <!-- 橫向圖例條：可切換分組欄位、色盲友善（色+形）、可自訂顏色/形狀 -->
     <section class="panel legend-bar">
       <div class="legend-left">
-        <span class="legend-title">亞科</span>
+        <label class="group-field-lbl">分組依 <select id="group-field" class="axis-select"></select></label>
         <ul id="legend" class="legend-chips"></ul>
-        <span class="legend-hint dim">顏色外也以<strong>形狀</strong>區辨；點選可切換顯示</span>
+        <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ 顏色/形狀</button>
+        <div id="group-settings" class="group-settings" hidden>
+          <div class="gs-head"><span>自訂顏色與形狀</span><button class="btn small gs-reset">重設為預設</button></div>
+          <div class="gs-list"></div>
+        </div>
       </div>
       <div id="dataset-meta" class="dataset-meta"></div>
     </section>
@@ -73,6 +78,7 @@
             <button class="seg-btn active" data-mode="clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
             <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
           </div>
+          <button class="btn small expand-tree" title="展開全部 / 收合深層">展開全部</button>
           <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
           <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>
         </div>
@@ -85,26 +91,23 @@
     </section>
   </main>
 
-  <!-- 物種資訊視窗 -->
-  <div id="info-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-name">
-      <button class="modal-close" data-close aria-label="關閉">×</button>
-      <div class="info-body">
-        <div class="info-image-wrap"><img id="info-image" alt="" /></div>
-        <div class="info-text">
-          <h3 id="info-name"></h3>
-          <div id="info-group" class="info-group"></div>
-          <table id="info-table" class="info-table"></table>
-        </div>
-      </div>
+  <!-- 滑鼠移到點上浮出的資訊卡 -->
+  <div id="info-card" class="info-card" hidden></div>
+
+  <!-- 點擊釘選的側邊常駐面板 -->
+  <aside id="side-panel" class="side-panel" hidden>
+    <div class="side-panel-head">
+      <span>物種資訊</span>
+      <button id="side-panel-close" class="modal-close" aria-label="關閉">×</button>
     </div>
-  </div>
+    <div id="side-panel-body"></div>
+  </aside>
 
   <!-- 階段四烤入的資料（若存在則自動載入，開啟即看；無此檔則顯示上傳畫面）-->
   <script src="data/baked.js" onerror="window.__noBaked=1"></script>
   <script src="js/state.js"></script>
   <script src="js/zip-loader.js"></script>
+  <script src="js/groups.js"></script>
   <script src="js/legend.js"></script>
   <script src="js/pca-view.js"></script>
   <script src="js/tree-view.js"></script>

@@ -1,19 +1,18 @@
-/* PCA 散佈圖（Plotly）：分群著色＋形狀、軸切換、scree、hover 輕提示、
-   click 開資訊視窗、跨視圖連動高亮。 */
+/* PCA 散佈圖（Plotly）：分群著色＋形狀（可切換欄位/自訂）、軸切換、
+   hover 浮出資訊卡、click 釘選、跨視圖連動高亮、固定軸比例尺。 */
 (function (global) {
   "use strict";
-  var Store = global.FrogDash.Store;
+  var Store = global.FrogDash.Store, Groups = global.FrogDash.Groups;
 
   function PCAView(opts) {
     this.viewId = opts.viewId;
     this.plotEl = document.getElementById(opts.plotId);
-    this.screeEl = document.getElementById(opts.screeId);
     this.xSel = document.getElementById(opts.xId);
     this.ySel = document.getElementById(opts.yId);
     this.titleEl = document.getElementById(opts.titleId);
     this.view = null;
-    this.traces = [];           // 每群一條 trace
-    this.groupOfTrace = [];      // trace index -> group value
+    this.traces = [];
+    this.groupOfTrace = [];
     var self = this;
     this.xSel.addEventListener("change", function () { self.draw(); });
     this.ySel.addEventListener("change", function () { self.draw(); });
@@ -24,15 +23,12 @@
     this.view = model.views[this.viewId];
     if (!this.view) return;
     this.titleEl.textContent = this.view.label;
-    // 軸選單
-    var pcs = this.view.pcs, self = this;
+    var pcs = this.view.pcs;
     [this.xSel, this.ySel].forEach(function (sel) {
       sel.innerHTML = "";
-      pcs.forEach(function (p) {
-        var pct = self.view.varianceExplained[p];
+      pcs.forEach(function (p) {           // 已移除變量解釋(%)，僅列 PC 名
         var opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p + (pct != null ? " (" + (pct * 100).toFixed(1) + "%)" : "");
+        opt.value = p; opt.textContent = p;
         sel.appendChild(opt);
       });
     });
@@ -40,46 +36,33 @@
     this.ySel.value = this.view.defaultAxes[1] || pcs[1] || pcs[0];
     this.buildTraces();
     this.draw();
-    this.drawScree();
   };
 
   PCAView.prototype.buildTraces = function () {
     var model = this.model, view = this.view;
-    var groups = model.groups.slice();
-    // 未列入 groups 的物種歸到「其他」
+    var members = Groups.members();
     var byGroup = {};
-    groups.forEach(function (g) { byGroup[g.value] = { g: g, ids: [] }; });
-    var others = { g: { value: "__other__", label: "其他", color: "#888888", symbol: "circle" }, ids: [] };
+    members.forEach(function (g) { byGroup[g.value] = { g: g, ids: [] }; });
     view.ids.forEach(function (sid) {
-      var gv = (model.taxa[sid] || {})[model.groupField];
-      if (byGroup[gv]) byGroup[gv].ids.push(sid);
-      else others.ids.push(sid);
+      var v = Groups.valueOf(sid);
+      (byGroup[v] || (byGroup[v] = { g: { value: v, label: v, color: "#888", symbol: "circle" }, ids: [] })).ids.push(sid);
     });
-    var order = groups.map(function (g) { return byGroup[g.value]; });
-    if (others.ids.length) order.push(others);
+    var order = members.map(function (g) { return byGroup[g.value]; })
+      .concat(Object.keys(byGroup).filter(function (v) { return !members.some(function (m) { return m.value === v; }); })
+        .map(function (v) { return byGroup[v]; }));
 
     this.traces = [];
     this.groupOfTrace = [];
-    this.speciesIndexInTrace = {}; // species_id -> {trace, idx}
+    this.speciesIndexInTrace = {};
     var self = this;
     order.forEach(function (entry, ti) {
-      entry.ids.forEach(function (sid, idx) {
-        self.speciesIndexInTrace[sid] = { trace: ti, idx: idx };
-      });
+      entry.ids.forEach(function (sid, idx) { self.speciesIndexInTrace[sid] = { trace: ti, idx: idx }; });
       self.traces.push({
-        type: "scattergl",
-        mode: "markers",
-        name: entry.g.label,
-        ids: entry.ids,
+        type: "scattergl", mode: "markers", name: entry.g.label,
         customdata: entry.ids,
-        text: entry.ids.map(function (sid) {
-          return (model.taxa[sid] || {})[model.displayLabelCol] || sid;
-        }),
+        text: entry.ids.map(function (sid) { return (model.taxa[sid] || {})[model.displayLabelCol] || sid; }),
         hovertemplate: "%{text}<extra></extra>",
-        marker: {
-          color: entry.g.color, symbol: entry.g.symbol, size: 9,
-          line: { color: "#33404d", width: 0.6 }, opacity: 0.95
-        },
+        marker: { color: entry.g.color, symbol: entry.g.symbol, size: 9, line: { color: "#33404d", width: 0.6 }, opacity: 0.95 },
         selected: { marker: { size: 15, opacity: 1 } },
         unselected: { marker: { opacity: 0.12 } },
         x: [], y: []
@@ -88,17 +71,31 @@
     });
   };
 
+  // 以「全體資料」計算固定的方形軸範圍（等尺度），與群組顯示與否無關 (#11)
+  PCAView.prototype.computeRange = function (px, py) {
+    var view = this.view, minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+    view.ids.forEach(function (sid) {
+      var x = view.scores[sid][px], y = view.scores[sid][py];
+      if (x < minx) minx = x; if (x > maxx) maxx = x;
+      if (y < miny) miny = y; if (y > maxy) maxy = y;
+    });
+    var cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;
+    var span = Math.max(maxx - minx, maxy - miny) * 1.12 || 1;
+    return { x: [cx - span / 2, cx + span / 2], y: [cy - span / 2, cy + span / 2] };
+  };
+
   PCAView.prototype.draw = function () {
     if (!this.view) return;
-    var px = this.xSel.value, py = this.ySel.value, model = this.model, view = this.view;
+    var px = this.xSel.value, py = this.ySel.value, view = this.view;
     this.traces.forEach(function (tr) {
-      tr.x = tr.ids.map(function (sid) { return view.scores[sid][px]; });
-      tr.y = tr.ids.map(function (sid) { return view.scores[sid][py]; });
+      tr.x = tr.customdata.map(function (sid) { return view.scores[sid][px]; });
+      tr.y = tr.customdata.map(function (sid) { return view.scores[sid][py]; });
     });
+    var rng = this.computeRange(px, py);
     var layout = {
       margin: { l: 44, r: 10, t: 8, b: 38 },
-      xaxis: { title: { text: axisTitle(view, px), font: { size: 11 } }, zeroline: true, zerolinecolor: "#e2e6eb" },
-      yaxis: { title: { text: axisTitle(view, py), font: { size: 11 } }, scaleanchor: "x", scaleratio: 1, zeroline: true, zerolinecolor: "#e2e6eb" },
+      xaxis: { title: { text: px, font: { size: 11 } }, zeroline: true, zerolinecolor: "#e2e6eb", autorange: false, range: rng.x.slice() },
+      yaxis: { title: { text: py, font: { size: 11 } }, scaleanchor: "x", scaleratio: 1, zeroline: true, zerolinecolor: "#e2e6eb", autorange: false, range: rng.y.slice() },
       showlegend: false, hovermode: "closest", dragmode: "pan",
       paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)"
     };
@@ -113,26 +110,17 @@
           Store.focus(sid, self.viewId);
           Store.setHighlight([sid], self.viewId);
         });
+        self.plotEl.on("plotly_hover", function (ev) {
+          if (!ev.points || !ev.points.length) return;
+          var sid = ev.points[0].customdata;
+          var me = ev.event || {};
+          Store.hover(sid, { x: me.clientX, y: me.clientY }, self.viewId);
+        });
+        self.plotEl.on("plotly_unhover", function () { Store.unhover(); });
       }
       self.applyHighlight(Store.highlight);
       self.applyGroups(Store.disabledGroups);
     });
-  };
-
-  PCAView.prototype.drawScree = function () {
-    var view = this.view, n = Math.min(view.variance.length, 12);
-    var xs = [], ys = [];
-    for (var i = 0; i < n; i++) { xs.push("PC" + (i + 1)); ys.push(view.variance[i] * 100); }
-    var cur = [this.xSel.value, this.ySel.value];
-    var colors = xs.map(function (p) { return cur.indexOf(p) >= 0 ? "#0072B2" : "#c2ccd6"; });
-    Plotly.react(this.screeEl, [{
-      type: "bar", x: xs, y: ys, marker: { color: colors },
-      hovertemplate: "%{x}: %{y:.1f}%<extra></extra>"
-    }], {
-      margin: { l: 30, r: 6, t: 4, b: 18 }, height: 84,
-      xaxis: { tickfont: { size: 8 } }, yaxis: { tickfont: { size: 8 }, ticksuffix: "%" },
-      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)"
-    }, { displayModeBar: false, responsive: true, staticPlot: true });
   };
 
   PCAView.prototype.applyHighlight = function (idSet) {
@@ -151,17 +139,17 @@
   };
 
   PCAView.prototype.applyGroups = function (disabled) {
-    var vis = this.groupOfTrace.map(function (gv) {
-      return disabled.has(gv) ? "legendonly" : true; // 用 visible:false 隱藏
-    }).map(function (v) { return v === "legendonly" ? false : true; });
-    Plotly.restyle(this.plotEl, { visible: vis });
+    var vis = this.groupOfTrace.map(function (gv) { return !disabled.has(gv); });
+    Plotly.restyle(this.plotEl, { visible: vis });   // 只改可見性，範圍不變 (#11)
   };
 
-  function axisTitle(view, pc) {
-    return view.axisLabels[pc] || pc;
-  }
+  PCAView.prototype.rebuild = function () {   // 分組欄位/配色改變後
+    if (!this.view) return;
+    this.buildTraces();
+    this.draw();
+  };
 
-  // 依 manifest 動態建立每個視圖的面板 DOM
+  // 依 manifest 動態建立每個視圖的面板 DOM（已移除 scree）
   function buildPanel(row, view) {
     var vid = view.id;
     var sec = document.createElement("section");
@@ -175,8 +163,7 @@
           '<button class="btn small dl" data-view="' + vid + '" title="下載此圖 PNG">↓ PNG</button>' +
         '</div>' +
       '</div>' +
-      '<div id="' + vid + '-plot" class="plot"></div>' +
-      '<div class="scree-wrap"><span class="scree-label">各 PC 變異解釋</span><div id="' + vid + '-scree" class="scree"></div></div>';
+      '<div id="' + vid + '-plot" class="plot"></div>';
     row.appendChild(sec);
   }
   function esc(s) {
@@ -191,24 +178,17 @@
       var row = document.getElementById("pca-row");
       row.innerHTML = "";
       views = {};
-      // 視圖數量 1~2 個並排；更多則自動換行（CSS grid 已處理）
       row.style.gridTemplateColumns = model.viewOrder.length === 1 ? "1fr" : "1fr 1fr";
+      model.viewOrder.forEach(function (vid) { buildPanel(row, model.views[vid]); });
       model.viewOrder.forEach(function (vid) {
-        buildPanel(row, model.views[vid]);
-      });
-      model.viewOrder.forEach(function (vid) {
-        views[vid] = new PCAView({ viewId: vid, plotId: vid + "-plot", screeId: vid + "-scree",
-                                   xId: vid + "-x", yId: vid + "-y", titleId: vid + "-title" });
+        views[vid] = new PCAView({ viewId: vid, plotId: vid + "-plot", xId: vid + "-x", yId: vid + "-y", titleId: vid + "-title" });
         views[vid].setData(model);
       });
       global.FrogDash.pcaViews = views;
     });
-    Store.on("highlight", function (p) {
-      Object.keys(views).forEach(function (k) { views[k].applyHighlight(p.ids); });
-    });
-    Store.on("groups", function (disabled) {
-      Object.keys(views).forEach(function (k) { views[k].applyGroups(disabled); });
-    });
+    Store.on("highlight", function (p) { Object.keys(views).forEach(function (k) { views[k].applyHighlight(p.ids); }); });
+    Store.on("groups", function (disabled) { Object.keys(views).forEach(function (k) { views[k].applyGroups(disabled); }); });
+    Store.on("groupschanged", function () { Object.keys(views).forEach(function (k) { views[k].rebuild(); }); });
   }
 
   global.FrogDash = global.FrogDash || {};

@@ -186,6 +186,44 @@ h1, h2, h3 { font-weight: 650; letter-spacing: .01em; }
 .info-table tr:last-child td { border-bottom: none; }
 .info-table td.k { color: var(--dim); width: 40%; }
 
+/* ---- 分組欄位選單 + 顏色/形狀設定 ---- */
+.group-field-lbl { font-size: 12px; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 5px; }
+.group-settings {
+  position: absolute; z-index: 45; margin-top: 6px; background: #fff; border: 1px solid var(--line-strong);
+  border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px; max-height: 340px; overflow: auto; min-width: 280px;
+}
+.legend-bar { position: relative; }
+.gs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 650; font-size: 13px; margin-bottom: 8px; }
+.gs-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 4px 0; }
+.gs-name { font-size: 13px; }
+.gs-color { width: 34px; height: 24px; padding: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; cursor: pointer; }
+.gs-shape { font-size: 12px; padding: 3px 5px; border: 1px solid var(--line-strong); border-radius: 6px; }
+
+/* ---- 浮動資訊卡（hover）---- */
+.info-card {
+  position: fixed; z-index: 70; background: #fff; border: 1px solid var(--line-strong);
+  border-radius: 12px; box-shadow: 0 8px 28px rgba(16,24,40,.22); padding: 14px 16px;
+  width: 320px; max-width: 88vw; pointer-events: none;
+}
+.info-card .info-body { gap: 14px; }
+.info-card .info-image-wrap { width: 120px; height: 120px; }
+.info-card .info-text h3 { font-size: 15px; }
+.info-card .info-table td { padding: 4px 5px; font-size: 12px; }
+
+/* ---- 側邊常駐面板（click 釘選）---- */
+.side-panel {
+  position: fixed; top: 0; right: 0; width: 340px; height: 100%; z-index: 55;
+  background: #fff; border-left: 1px solid var(--line); box-shadow: -4px 0 16px rgba(16,24,40,.08);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.side-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 650; }
+#side-panel-body { padding: 16px; overflow: auto; }
+#side-panel-body .info-body { flex-direction: column; gap: 14px; }
+#side-panel-body .info-image-wrap { width: 100%; height: 220px; }
+#side-panel-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+body.has-side-panel .dashboard { margin-right: 340px; }
+@media (max-width: 720px) { .side-panel { width: 100%; } body.has-side-panel .dashboard { margin-right: 0; } }
+
 /* ---- 建立精靈 ---- */
 .builder { flex: 1; display: grid; grid-template-columns: 400px 1fr; gap: var(--gap); padding: var(--gap); min-height: 0; overflow: hidden; }
 .builder-form { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: auto; padding: 6px 4px; }

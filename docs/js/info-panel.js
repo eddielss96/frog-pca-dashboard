@@ -1,63 +1,81 @@
-/* 物種資訊視窗：click 點位後彈出。缺圖優雅降級為佔位圖。 */
+/* 物種資訊：滑鼠移到點上→浮出資訊卡（不必點）；點擊→釘選到側邊常駐面板 (#7/#8)。
+   缺圖優雅降級為佔位圖。 */
 (function (global) {
   "use strict";
   var Store = global.FrogDash.Store;
+  var card, panel, panelBody, panelToggle;
 
-  var modal, imgWrap, img, nameEl, groupEl, table;
-
-  function open(model, sid) {
-    var t = model.taxa[sid];
-    if (!t) return;
-    nameEl.textContent = t[model.displayLabelCol] || sid;
-
-    var g = Store.groupOf(sid);
-    groupEl.innerHTML = g
-      ? global.FrogDash.svgSymbol(g.symbol, g.color, 14) + "<span>" + g.label + "</span>"
-      : "";
-
-    // 圖片或佔位
-    var url = model.imageURLs[sid];
-    if (url) { imgWrap.classList.remove("placeholder"); img.src = url; img.alt = nameEl.textContent; }
-    else { imgWrap.classList.add("placeholder"); img.removeAttribute("src"); img.alt = ""; }
-
-    // 中介資料表（依 manifest 的 info_fields 有序顯示）
-    var rows = "";
-    rows += tr("species_id", sid);
-    model.infoFields.forEach(function (f) {
-      var v = t[f.column];
-      if (v != null && v !== "") rows += tr(f.label, v);
-    });
-    table.innerHTML = rows;
-
-    modal.hidden = false;
-  }
-  function tr(k, v) {
-    return "<tr><td class='k'>" + esc(k) + "</td><td>" + esc(v) + "</td></tr>";
-  }
   function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
     });
   }
-  function close() { modal.hidden = true; }
+
+  function buildHTML(model, sid) {
+    var t = model.taxa[sid]; if (!t) return "";
+    var name = t[model.displayLabelCol] || sid;
+    var g = Store.groupOf(sid);
+    var groupHTML = g ? global.FrogDash.svgSymbol(g.symbol, g.color, 14) + "<span>" + esc(g.label) + "</span>" : "";
+    var url = model.imageURLs[sid];
+    var imgHTML = url
+      ? '<div class="info-image-wrap"><img src="' + url + '" alt="' + esc(name) + '"/></div>'
+      : '<div class="info-image-wrap placeholder"></div>';
+    var rows = "<tr><td class='k'>species_id</td><td>" + esc(sid) + "</td></tr>";
+    (model.infoFields || []).forEach(function (f) {
+      var v = t[f.column];
+      if (v != null && v !== "") rows += "<tr><td class='k'>" + esc(f.label) + "</td><td>" + esc(v) + "</td></tr>";
+    });
+    return imgHTML +
+      '<div class="info-text"><h3>' + esc(name) + '</h3>' +
+      (groupHTML ? '<div class="info-group">' + groupHTML + '</div>' : "") +
+      '<table class="info-table">' + rows + '</table></div>';
+  }
+
+  function showCard(p) {
+    if (!Store.data) return;
+    card.innerHTML = '<div class="info-body">' + buildHTML(Store.data, p.speciesId) + '</div>';
+    card.hidden = false;
+    // 定位在游標旁，超出邊界則翻面
+    var pos = p.pos || { x: 40, y: 40 };
+    var r = card.getBoundingClientRect();
+    var x = pos.x + 16, y = pos.y + 16;
+    if (x + r.width > window.innerWidth - 8) x = pos.x - r.width - 16;
+    if (y + r.height > window.innerHeight - 8) y = window.innerHeight - r.height - 8;
+    card.style.left = Math.max(8, x) + "px";
+    card.style.top = Math.max(8, y) + "px";
+  }
+  function hideCard() { if (card) card.hidden = true; }
+
+  function openPanel(sid) {
+    if (!Store.data) return;
+    panelBody.innerHTML = '<div class="info-body">' + buildHTML(Store.data, sid) + '</div>';
+    panel.hidden = false;
+    document.body.classList.add("has-side-panel");
+    if (panelToggle) panelToggle.classList.add("active");
+  }
+  function closePanel() {
+    panel.hidden = true;
+    document.body.classList.remove("has-side-panel");
+    if (panelToggle) panelToggle.classList.remove("active");
+  }
 
   function init() {
-    modal = document.getElementById("info-modal");
-    imgWrap = modal.querySelector(".info-image-wrap");
-    img = document.getElementById("info-image");
-    nameEl = document.getElementById("info-name");
-    groupEl = document.getElementById("info-group");
-    table = document.getElementById("info-table");
+    card = document.getElementById("info-card");
+    panel = document.getElementById("side-panel");
+    panelBody = document.getElementById("side-panel-body");
+    panelToggle = document.getElementById("side-panel-toggle");
 
-    modal.querySelectorAll("[data-close]").forEach(function (el) {
-      el.addEventListener("click", close);
+    Store.on("hover", showCard);
+    Store.on("unhover", hideCard);
+    Store.on("focus", function (p) { hideCard(); openPanel(p.speciesId); });
+
+    var closeBtn = document.getElementById("side-panel-close");
+    if (closeBtn) closeBtn.addEventListener("click", closePanel);
+    if (panelToggle) panelToggle.addEventListener("click", function () {
+      if (panel.hidden) { if (Store._lastFocus) openPanel(Store._lastFocus); else { panel.hidden = false; document.body.classList.add("has-side-panel"); panelToggle.classList.add("active"); } }
+      else closePanel();
     });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !modal.hidden) close();
-    });
-    Store.on("focus", function (p) {
-      if (Store.data) open(Store.data, p.speciesId);
-    });
+    Store.on("focus", function (p) { Store._lastFocus = p.speciesId; });
   }
 
   global.FrogDash = global.FrogDash || {};

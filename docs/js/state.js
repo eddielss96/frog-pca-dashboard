@@ -45,16 +45,21 @@
     this.emit("highlight", { ids: this.highlight, source: null });
   };
 
-  // 點擊某點 → 開資訊視窗（單一物種聚焦）
+  // 點擊某點 → 釘選（側邊面板）
   Store.focus = function (speciesId, source) {
     this.emit("focus", { speciesId: speciesId, source: source || null });
   };
 
-  // 工具：取得某物種所屬群組成員（color/symbol/label）
+  // 滑鼠移到某點 → 浮出資訊卡
+  Store.hover = function (speciesId, pos, source) {
+    this.emit("hover", { speciesId: speciesId, pos: pos || null, source: source || null });
+  };
+  Store.unhover = function () { this.emit("unhover", {}); };
+
+  // 工具：取得某物種目前分組的樣式（color/symbol/label）
   Store.groupOf = function (speciesId) {
-    if (!this.data) return null;
-    var clade = (this.data.taxa[speciesId] || {})[this.data.groupField];
-    return this.data.groupByValue[clade] || null;
+    var G = global.FrogDash && global.FrogDash.Groups;
+    return (G && G.model) ? G.styleOf(speciesId) : null;
   };
 
   global.FrogDash = { Store: Store, Emitter: Emitter };

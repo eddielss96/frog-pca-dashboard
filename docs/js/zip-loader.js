@@ -145,10 +145,18 @@
         // 載入有指定的圖片
         Object.keys(model.taxa).forEach(function (sid) {
           var rel = model.taxa[sid][model.imageCol];
-          if (rel) {
-            var f = zip.file("images/" + rel) || zip.file(rel);
-            if (f) imgJobs.push(f.async("blob").then(function (b) {
-              model.imageURLs[sid] = URL.createObjectURL(b);
+          if (!rel) return;
+          var f = zip.file("images/" + rel) || zip.file(rel);
+          if (!f) return;
+          if (/\.svg$/i.test(rel)) {
+            // SVG 需正確 MIME，<img> 才會渲染
+            imgJobs.push(f.async("string").then(function (txt) {
+              model.imageURLs[sid] = URL.createObjectURL(new Blob([txt], { type: "image/svg+xml" }));
+            }));
+          } else {
+            var mime = /\.png$/i.test(rel) ? "image/png" : /\.jpe?g$/i.test(rel) ? "image/jpeg" : "application/octet-stream";
+            imgJobs.push(f.async("uint8array").then(function (u8) {
+              model.imageURLs[sid] = URL.createObjectURL(new Blob([u8], { type: mime }));
             }));
           }
         });

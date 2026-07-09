@@ -4,3 +4,4 @@ curveslide.csv
 /Rlib/
 __pycache__/
 *.pyc
+build/*_site.zip

@@ -10,9 +10,9 @@
     "vendor/jszip/jszip-3.10.1.min.js",
     "vendor/plotly/plotly-2.35.2.min.js",
     "vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js",
-    "js/state.js", "js/zip-loader.js", "js/unified-build.js", "js/legend.js",
-    "js/pca-view.js", "js/tree-view.js", "js/info-panel.js", "js/search.js",
-    "js/app.js", "js/builder.js"
+    "js/state.js", "js/zip-loader.js", "js/unified-build.js", "js/groups.js",
+    "js/legend.js", "js/pca-view.js", "js/tree-view.js", "js/info-panel.js",
+    "js/search.js", "js/app.js", "js/builder.js"
   ];
 
   var lastZipBlob = null;
@@ -224,6 +224,9 @@
       FD.TreeView.setMode(b.dataset.mode);
     });
     var fit = document.querySelector(".fit-tree"); if (fit) fit.addEventListener("click", function () { FD.TreeView.resize(); });
+    var exp = document.querySelector(".expand-tree"); if (exp) exp.addEventListener("click", function () {
+      var e = FD.TreeView.toggleExpandAll(); exp.textContent = e ? "收合深層" : "展開全部";
+    });
     var dlt = document.querySelector(".dl-tree"); if (dlt) dlt.addEventListener("click", function () { FD.TreeView.exportPNG(); });
     el("clear-btn").addEventListener("click", function () { Store.clearHighlight(); });
   }

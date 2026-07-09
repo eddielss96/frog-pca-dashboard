@@ -93,9 +93,13 @@
         <div class="pca-row" id="pca-row"></div>
         <section class="panel legend-bar">
           <div class="legend-left">
-            <span class="legend-title">分組</span>
+            <label class="group-field-lbl">分組依 <select id="group-field" class="axis-select"></select></label>
             <ul id="legend" class="legend-chips"></ul>
-            <span class="legend-hint dim">顏色外也以<strong>形狀</strong>區辨；點選可切換顯示</span>
+            <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ 顏色/形狀</button>
+            <div id="group-settings" class="group-settings" hidden>
+              <div class="gs-head"><span>自訂顏色與形狀</span><button class="btn small gs-reset">重設為預設</button></div>
+              <div class="gs-list"></div>
+            </div>
           </div>
           <div id="dataset-meta" class="dataset-meta"></div>
         </section>
@@ -107,6 +111,7 @@
                 <button class="seg-btn active" data-mode="clado">整齊對齊</button>
                 <button class="seg-btn" data-mode="phylo">分支長度</button>
               </div>
+              <button class="btn small expand-tree">展開全部</button>
               <button class="btn small fit-tree">⤢ 自動縮放</button>
               <button class="btn small dl-tree">↓ PNG</button>
             </div>
@@ -120,21 +125,13 @@
     </main>
   </div>
 
-  <!-- 物種資訊視窗 -->
-  <div id="info-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-name">
-      <button class="modal-close" data-close aria-label="關閉">×</button>
-      <div class="info-body">
-        <div class="info-image-wrap"><img id="info-image" alt="" /></div>
-        <div class="info-text">
-          <h3 id="info-name"></h3>
-          <div id="info-group" class="info-group"></div>
-          <table id="info-table" class="info-table"></table>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- 滑鼠移到點上浮出的資訊卡 -->
+  <div id="info-card" class="info-card" hidden></div>
+  <!-- 點擊釘選的側邊常駐面板 -->
+  <aside id="side-panel" class="side-panel" hidden>
+    <div class="side-panel-head"><span>物種資訊</span><button id="side-panel-close" class="modal-close" aria-label="關閉">×</button></div>
+    <div id="side-panel-body"></div>
+  </aside>
 
   <!-- 打包後教學視窗 -->
   <div id="tutorial-modal" class="modal" hidden>
@@ -157,6 +154,7 @@
   <script src="js/state.js"></script>
   <script src="js/zip-loader.js"></script>
   <script src="js/unified-build.js"></script>
+  <script src="js/groups.js"></script>
   <script src="js/legend.js"></script>
   <script src="js/pca-view.js"></script>
   <script src="js/tree-view.js"></script>

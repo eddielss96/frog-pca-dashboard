@@ -31,6 +31,9 @@
         if (p.source === "tree") return; // 來源是自己就不重複套用
         self.applyHighlight(p.ids);
       });
+      Store.on("groupschanged", function () {   // 分組欄位/配色改變 → 重新著色
+        if (self.tree) { self.buildMapsAndStyles(); self.applyHighlight(Store.highlight); }
+      });
       if (this.supported) {
         if (global.ResizeObserver) {
           this._ro = new ResizeObserver(function () { self.resize(); });
@@ -116,11 +119,39 @@
         try { origSelect(node, append); } catch (e) {}
         if (!self._suppress) self.onPick(node);
       };
+      // 包裝 handleHover：滑鼠碰到葉節點時浮出物種資訊 (#9)
+      if (typeof this.tree.handleHover === "function") {
+        var origHover = this.tree.handleHover.bind(this.tree);
+        this.tree.handleHover = function (info, ev) {
+          try { origHover(info, ev); } catch (e) {}
+          self.onHover(info, ev);
+        };
+      }
+
+      // 預設收合較深層（只展開較淺骨幹）
+      this.collapseDeep(4);
 
       if (this._ro) { try { this._ro.disconnect(); this._ro.observe(this.host); } catch (e) {} }
       // 待容器尺寸穩定後填滿畫面（避免只佔左側一小塊 / 上下被裁切）
       requestAnimationFrame(function () { self.resize(); self.applyHighlight(Store.highlight); });
       setTimeout(function () { self.resize(); }, 120);
+    },
+
+    onHover: function (info, ev) {
+      var node = null;
+      try { node = this.tree.pickNodeFromLayer(info); } catch (e) {}
+      if (node) {
+        var full = node;
+        try { if (node.id != null) full = this.tree.findNodeById(node.id) || node; } catch (e) {}
+        if (full && full.isLeaf) {
+          var tip = full.label != null ? full.label : full.id;
+          var sid = this.model.tipToSpecies[tip] || tip;
+          var me = (ev && ev.srcEvent) ? ev.srcEvent : ev;
+          Store.hover(sid, { x: me && me.clientX, y: me && me.clientY }, "tree");
+          return;
+        }
+      }
+      Store.unhover();
     },
 
     // 讓整棵樹縮放到剛好填滿容器
@@ -160,8 +191,31 @@
     },
 
     groupOf: function (sid) {
-      var clade = (this.model.taxa[sid] || {})[this.model.groupField];
-      return this.model.groupByValue[clade] || null;
+      var G = global.FrogDash.Groups;
+      return (G && G.model) ? G.styleOf(sid) : null;
+    },
+
+    // 預設把較深的子樹收合起來（只展開淺層，方便閱讀）(#9)
+    collapseDeep: function (threshold) {
+      if (!this.tree || this.expandedAll) return;
+      var g; try { g = this.tree.getGraphAfterLayout(); } catch (e) { return; }
+      var root = g && g.root; if (!root) return;
+      var picks = [];
+      (function walk(n, depth) {
+        if (!n || n.isLeaf) return;
+        if (depth >= threshold) { picks.push(n); return; }
+        (n.children || []).forEach(function (c) { walk(c, depth + 1); });
+      })(root, 0);
+      var self = this; this._suppress = true;
+      picks.forEach(function (n) {
+        try { self.tree.collapseNode(self.tree.findNodeById(n.id) || n); } catch (e) {}
+      });
+      this._suppress = false;
+    },
+    toggleExpandAll: function () {
+      this.expandedAll = !this.expandedAll;
+      this.build();
+      return this.expandedAll;
     },
 
     onPick: function (picked) {

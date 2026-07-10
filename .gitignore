@@ -1,0 +1,7 @@
+curveslide.csv
+.Rhistory
+*.Rout
+/Rlib/
+__pycache__/
+*.pyc
+build/*_site.zip

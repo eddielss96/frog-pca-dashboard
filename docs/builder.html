@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>建立精靈 — 上傳 PCA 資料，打包成自己的無伺服器互動網頁</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='11' cy='15' r='7' fill='%230072B2'/%3E%3Crect x='17' y='9' width='12' height='12' fill='%23E69F00'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="vendor/jszip/jszip-3.10.1.min.js"></script>
+  <script src="vendor/plotly/plotly-2.35.2.min.js"></script>
+  <script src="vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>建立精靈</h1>
+      <p class="subtitle">上傳 PCA 資料 → 即時互動預覽 → 打包成可放 GitHub Pages 的無伺服器網頁</p>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <input id="search-input" type="search" placeholder="搜尋物種…" autocomplete="off" aria-label="搜尋物種" />
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="clear-btn" class="btn" title="清除選取">清除選取</button>
+      <a class="btn" href="index.html">開啟檢視器</a>
+    </div>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+  <div class="builder">
+    <!-- 左：表單 -->
+    <aside class="builder-form">
+      <ol class="steps">
+        <li>
+          <h3>① 資料集資訊</h3>
+          <label class="fld">標題 <input id="f-title" type="text" placeholder="例：My frog PCA" /></label>
+          <div class="grid2">
+            <label class="fld">DOI（可選）<input id="f-doi" type="text" placeholder="10.xxxx/xxxx" /></label>
+            <label class="fld">來源網址（可選）<input id="f-source" type="text" placeholder="https://…" /></label>
+          </div>
+          <label class="fld">引用（可選）<textarea id="f-cite" rows="2" placeholder="Author et al. (Year) …"></textarea></label>
+        </li>
+
+        <li>
+          <h3>② PCA 視圖</h3>
+          <p class="dim small">每個視圖上傳一份「物種 × PC 分數」CSV（第一欄為 species_id，其餘為各 PC）。可選附上 variance CSV（欄 variance_explained）；未提供時自動由分數估算。</p>
+          <div id="views-list"></div>
+          <button id="add-view" class="btn small">＋ 新增視圖</button>
+        </li>
+
+        <li>
+          <h3>③ 物種／分類資料</h3>
+          <label class="fld">分類 CSV <input id="f-taxa" type="file" accept=".csv" /></label>
+          <div id="taxa-map" hidden>
+            <div class="grid2">
+              <label class="fld">species_id 欄 <select id="m-id"></select></label>
+              <label class="fld">顯示名稱欄 <select id="m-label"></select></label>
+            </div>
+            <div class="grid2">
+              <label class="fld">分組欄（著色／形狀）<select id="m-group"></select></label>
+              <label class="fld">圖片欄（可選）<select id="m-image"></select></label>
+            </div>
+            <label class="fld">資訊視窗顯示欄位（可複選）</label>
+            <div id="m-info" class="chips-pick"></div>
+          </div>
+        </li>
+
+        <li>
+          <h3>④ 親緣樹（可選）</h3>
+          <label class="fld">Newick 樹檔 <input id="f-tree" type="file" accept=".nwk,.tre,.newick,.txt" /></label>
+          <p class="dim small">樹的 tip 標籤需與 species_id 一致。無樹時只顯示 PCA。</p>
+        </li>
+      </ol>
+
+      <div class="builder-actions">
+        <button id="btn-preview" class="btn primary">建立預覽 ▶</button>
+        <button id="btn-zip" class="btn" disabled>下載統一 Zip</button>
+        <button id="btn-package" class="btn" disabled>打包成 GitHub Pages 網站 ⬇</button>
+      </div>
+      <div id="build-msg" class="build-msg"></div>
+    </aside>
+
+    <!-- 右：即時預覽（重用檢視器模組）-->
+    <main class="builder-preview">
+      <div id="preview-empty" class="preview-empty">
+        <div>
+          <p class="big">👀 即時預覽會出現在這裡</p>
+          <p class="dim">填好左側、按「建立預覽」。所有處理都在你的瀏覽器內完成，資料不會上傳到任何伺服器。</p>
+        </div>
+      </div>
+      <div id="dashboard" class="dashboard" hidden>
+        <div class="pca-row" id="pca-row"></div>
+        <section class="panel legend-bar">
+          <div class="legend-left">
+            <label class="group-field-lbl">分組依 <select id="group-field" class="axis-select"></select></label>
+            <ul id="legend" class="legend-chips"></ul>
+            <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ 顏色/形狀</button>
+            <div id="group-settings" class="group-settings" hidden>
+              <div class="gs-head"><span>自訂顏色與形狀</span><button class="btn small gs-reset">重設為預設</button></div>
+              <div class="gs-list"></div>
+            </div>
+          </div>
+          <div id="dataset-meta" class="dataset-meta"></div>
+        </section>
+        <section class="panel tree-panel">
+          <div class="panel-head">
+            <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
+            <div class="axis-ctrls">
+              <div class="seg" id="tree-mode" role="group">
+                <button class="seg-btn active" data-mode="clado">整齊對齊</button>
+                <button class="seg-btn" data-mode="phylo">分支長度</button>
+              </div>
+              <button class="btn small expand-tree">展開全部</button>
+              <button class="btn small fit-tree">⤢ 自動縮放</button>
+              <button class="btn small dl-tree">↓ PNG</button>
+            </div>
+          </div>
+          <div class="tree-host"><div id="tree-view" class="tree"></div></div>
+          <div id="tree-fallback" class="tree-fallback" hidden>
+            <p>⚠️ 此環境無法使用 WebGL，無法繪製互動式親緣樹。</p>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 滑鼠移到點上浮出的資訊卡 -->
+  <div id="info-card" class="info-card" hidden></div>
+  <!-- 點擊釘選的側邊常駐面板 -->
+  <aside id="side-panel" class="side-panel" hidden>
+    <div class="side-panel-head"><span>物種資訊</span><button id="side-panel-close" class="modal-close" aria-label="關閉">×</button></div>
+    <div id="side-panel-body"></div>
+  </aside>
+
+  <!-- 打包後教學視窗 -->
+  <div id="tutorial-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-tut></div>
+    <div class="modal-card wide" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close-tut aria-label="關閉">×</button>
+      <h2>✅ 打包完成！接著把它變成你的網頁</h2>
+      <p>下載的 <code id="tut-filename">my-pca-dashboard.zip</code> 就是一個完整的無伺服器網站。三步驟上線：</p>
+      <ol class="tut-steps">
+        <li><strong>建立 GitHub repo</strong>：到 GitHub 按 New repository，取個名字（例如 <code>my-pca</code>），建立。</li>
+        <li><strong>上傳檔案</strong>：解壓下載的 zip，把裡面<strong>所有檔案與資料夾</strong>（<code>index.html</code>、<code>css/</code>、<code>js/</code>、<code>vendor/</code>、<code>data/</code>、<code>.nojekyll</code>）拖到 repo 的「Add file → Upload files」，Commit。</li>
+        <li><strong>啟用 Pages</strong>：repo → <strong>Settings → Pages</strong> → Source 選 <em>Deploy from a branch</em> → Branch 選 <code>main</code>、Folder 選 <code>/(root)</code> → Save。約 1–2 分鐘後，你的互動式 PCA 網頁就在
+          <code>https://&lt;帳號&gt;.github.io/&lt;repo&gt;/</code> 上線了。</li>
+      </ol>
+      <p class="dim small">整個網站純靜態、無伺服器、可離線開啟；資料已內嵌，觀看者不需再上傳。日後要換資料，回到本精靈重新打包即可。</p>
+      <div class="tut-actions"><button class="btn primary" data-close-tut>我知道了</button></div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/zip-loader.js"></script>
+  <script src="js/unified-build.js"></script>
+  <script src="js/groups.js"></script>
+  <script src="js/legend.js"></script>
+  <script src="js/pca-view.js"></script>
+  <script src="js/tree-view.js"></script>
+  <script src="js/info-panel.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/builder.js"></script>
+</body>
+</html>

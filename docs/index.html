@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PCA Dashboard — 蝌蚪 / 成體形態空間與親緣樹</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='11' cy='15' r='7' fill='%230072B2'/%3E%3Crect x='17' y='9' width='12' height='12' fill='%23E69F00'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- 所有函式庫一律 vendor 在本地，禁用 CDN（永久保存、可離線開啟）-->
+  <script src="vendor/jszip/jszip-3.10.1.min.js"></script>
+  <script src="vendor/plotly/plotly-2.35.2.min.js"></script>
+  <script src="vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>形態空間 PCA Dashboard</h1>
+      <p id="dataset-subtitle" class="subtitle">蝌蚪 PCA · 成體 PCA · 親緣關係樹（三視圖連動）</p>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <input id="search-input" type="search" placeholder="搜尋物種…" autocomplete="off" aria-label="搜尋物種" />
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="side-panel-toggle" class="btn" title="開關側邊物種資訊面板">📋 側邊面板</button>
+      <button id="clear-btn" class="btn" title="清除目前的選取與高亮">清除選取</button>
+      <label class="btn file-btn">
+        載入統一 Zip
+        <input id="zip-input" type="file" accept=".zip" hidden />
+      </label>
+      <a class="btn primary" href="builder.html" title="上傳自己的 PCA 資料、打包成網站">建立精靈</a>
+    </div>
+  </header>
+
+  <!-- 載入 / 錯誤狀態 -->
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+  <!-- 起始畫面（尚未載入資料時）-->
+  <section id="welcome" class="welcome">
+    <div class="welcome-card">
+      <h2>載入資料以開始</h2>
+      <p>本工具讀取「統一 Zip」格式（由 R / Python / CSV 匯出器產生）。所有統計已在
+        匯出端算好，瀏覽器端只負責互動式呈現。</p>
+      <p class="dim">拖放 .zip 到此處，或用右上角「載入統一 Zip」。</p>
+      <button id="demo-btn" class="btn primary">載入青蛙範例資料</button>
+      <p id="demo-hint" class="dim small">（範例：Sherratt et al. 2017，澳洲青蛙與蝌蚪，166 物種）</p>
+      <hr class="welcome-sep" />
+      <p class="dim small">想用<strong>自己的 PCA 資料</strong>做一個像這樣的網頁？</p>
+      <a class="btn" href="builder.html">用建立精靈打包成自己的網站 →</a>
+    </div>
+  </section>
+
+  <!-- 主介面 -->
+  <main id="dashboard" class="dashboard" hidden>
+    <!-- PCA 視圖依 manifest 動態產生（支援任意數量的視圖）-->
+    <div class="pca-row" id="pca-row"></div>
+
+    <!-- 橫向圖例條：可切換分組欄位、色盲友善（色+形）、可自訂顏色/形狀 -->
+    <section class="panel legend-bar">
+      <div class="legend-left">
+        <label class="group-field-lbl">分組依 <select id="group-field" class="axis-select"></select></label>
+        <ul id="legend" class="legend-chips"></ul>
+        <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ 顏色/形狀</button>
+        <div id="group-settings" class="group-settings" hidden>
+          <div class="gs-head"><span>自訂顏色與形狀</span><button class="btn small gs-reset">重設為預設</button></div>
+          <div class="gs-list"></div>
+        </div>
+      </div>
+      <div id="dataset-meta" class="dataset-meta"></div>
+    </section>
+
+    <!-- 親緣樹獨佔整列、加高，避免被裁切 -->
+    <section class="panel tree-panel">
+      <div class="panel-head">
+        <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
+        <div class="axis-ctrls">
+          <div class="seg" id="tree-mode" role="group" aria-label="樹顯示模式">
+            <button class="seg-btn active" data-mode="clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
+            <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
+          </div>
+          <button class="btn small expand-tree" title="展開全部 / 收合深層">展開全部</button>
+          <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
+          <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>
+        </div>
+      </div>
+      <div class="tree-host"><div id="tree-view" class="tree"></div></div>
+      <div id="tree-fallback" class="tree-fallback" hidden>
+        <p>⚠️ 此環境無法使用 WebGL，無法繪製互動式親緣樹。</p>
+        <p class="dim">PCA 圖仍可正常使用；點擊樹分支高亮 clade 的功能在此環境停用。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 滑鼠移到點上浮出的資訊卡 -->
+  <div id="info-card" class="info-card" hidden></div>
+
+  <!-- 點擊釘選的側邊常駐面板 -->
+  <aside id="side-panel" class="side-panel" hidden>
+    <div class="side-panel-head">
+      <span>物種資訊</span>
+      <button id="side-panel-close" class="modal-close" aria-label="關閉">×</button>
+    </div>
+    <div id="side-panel-body"></div>
+  </aside>
+
+  <!-- 階段四烤入的資料（若存在則自動載入，開啟即看；無此檔則顯示上傳畫面）-->
+  <script src="data/baked.js" onerror="window.__noBaked=1"></script>
+  <script src="js/state.js"></script>
+  <script src="js/zip-loader.js"></script>
+  <script src="js/groups.js"></script>
+  <script src="js/legend.js"></script>
+  <script src="js/pca-view.js"></script>
+  <script src="js/tree-view.js"></script>
+  <script src="js/info-panel.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

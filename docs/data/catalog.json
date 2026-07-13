@@ -1,0 +1,19 @@
+{
+  "default": "frogs",
+  "datasets": [
+    {
+      "id": "frogs",
+      "title": "Australian frogs & tadpoles (Sherratt et al. 2017)",
+      "short": "青蛙與蝌蚪",
+      "description": "166 物種 · 蝌蚪 & 成體 PCA + 親緣樹",
+      "zip": "data/frog.zip"
+    },
+    {
+      "id": "trilobites",
+      "title": "Trilobite cephalic disparity (Drage & Pates 2025)",
+      "short": "三葉蟲",
+      "description": "762 物種 · 頭部形態空間（單一 PCA，無樹）",
+      "zip": "data/trilobite.zip"
+    }
+  ]
+}

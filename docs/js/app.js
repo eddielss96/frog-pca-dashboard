@@ -60,14 +60,52 @@
       var f = e.dataTransfer.files[0];
       if (f && /\.zip$/i.test(f.name)) loadVia(FD.Loader.fromBlob(f), "讀取 " + f.name);
     });
+  }
 
-    // 烤入資料（階段四）：若存在 data/baked.js 設定的全域，直接載入
-    if (global.FROG_BAKED_ZIP_BASE64) {
-      var bin = atob(global.FROG_BAKED_ZIP_BASE64);
-      var bytes = new Uint8Array(bin.length);
-      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      loadVia(FD.Loader.fromArrayBuffer(bytes.buffer), "載入內嵌資料");
-    }
+  // 烤入資料（單一資料集自包含站）：存在則直接載入
+  function loadBaked() {
+    var bin = atob(global.FROG_BAKED_ZIP_BASE64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    loadVia(FD.Loader.fromArrayBuffer(bytes.buffer), "載入內嵌資料");
+  }
+
+  // ---- Gallery：多資料集選單（data/catalog.json）----
+  var catalog = null, currentId = null;
+  function hashId() {
+    var m = /(?:^|[#&])dataset=([^&]+)/.exec(location.hash || "");
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function selectDataset(id, updateHash) {
+    if (!catalog) return;
+    var ds = catalog.datasets.filter(function (d) { return d.id === id; })[0];
+    if (!ds) ds = catalog.datasets[0];
+    currentId = ds.id;
+    var picker = document.getElementById("dataset-picker");
+    if (picker) picker.value = ds.id;
+    if (updateHash) location.hash = "dataset=" + ds.id;
+    loadVia(FD.Loader.fromUrl(ds.zip), "載入 " + (ds.short || ds.title));
+  }
+  function initGallery() {
+    return fetch("data/catalog.json").then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cat) {
+        if (!cat || !cat.datasets || !cat.datasets.length) return false;
+        catalog = cat;
+        var picker = document.getElementById("dataset-picker");
+        picker.innerHTML = "";
+        cat.datasets.forEach(function (ds) {
+          var o = document.createElement("option");
+          o.value = ds.id; o.textContent = ds.short || ds.title; o.title = ds.description || "";
+          picker.appendChild(o);
+        });
+        document.getElementById("dataset-switch").hidden = false;
+        picker.addEventListener("change", function () { selectDataset(picker.value, true); });
+        window.addEventListener("hashchange", function () {
+          var id = hashId(); if (id && id !== currentId) selectDataset(id, false);
+        });
+        selectDataset(hashId() || cat.default || cat.datasets[0].id, false);
+        return true;
+      }).catch(function () { return false; });
   }
 
   function initButtons() {
@@ -110,6 +148,10 @@
     FD.initSearch();
     initLoaders();
     initButtons();
+
+    // 載入來源優先序：烤入資料（單站）→ gallery 目錄 → 上傳畫面
+    if (global.FROG_BAKED_ZIP_BASE64) loadBaked();
+    else initGallery();  // 失敗則保留 welcome 上傳畫面
   }
 
   if (document.readyState === "loading")

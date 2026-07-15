@@ -43,7 +43,9 @@ images/<file>                 物種圖片（可選；缺圖時 Dashboard 用佔
     "path": "taxa/taxa.csv",
     "id_column": "species_id",
     "display_label_column": "display_label",
-    "image_column": "image",
+    "image_column": "image",                 // 主照片欄（檔名指向 images/）；可選
+    "image_caption_column": "image_credit",  // 照片標註/來源授權；可選
+    "outline_column": "outline",             // 形態輪廓欄（與照片並存顯示）；可選
     "info_fields": [ { "column": "...", "label": "..." } ]   // 資訊視窗顯示欄位（有序）
   },
   "groups": {                               // 圖例 / 著色 / 形狀（色盲友善）
@@ -65,7 +67,9 @@ images/<file>                 物種圖片（可選；缺圖時 Dashboard 用佔
 - **`groups` 同時帶 `color` 與 `symbol`**：顏色之外也用形狀區辨，色盲友善由結構保證，
   非事後補丁。配色採 Okabe–Ito。
 - **`info_fields` 是有序白名單**：資訊視窗只顯示指定欄位，新增 taxa 欄位不會洩漏到 UI。
-- **`image` 可選**：缺圖時 Dashboard 優雅降級為佔位圖。
+- **影像可選、可雙圖**：`image_column`（照片）與 `outline_column`（形態輪廓）各自獨立、
+  可並存於資訊卡/側邊面板；`image_caption_column` 提供照片的來源與授權標註。多物種可共用
+  同一張圖檔（如「同科代表標本」照），載入端會去重、只解一次。皆缺時優雅降級為佔位圖。
 - **scores 與 variance 分離**：`scores.csv` 含前 N 個 PC（軸切換用）；`variance.csv`
   含完整 scree 譜。
 

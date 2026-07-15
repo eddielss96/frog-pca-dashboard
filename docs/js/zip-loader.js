@@ -123,7 +123,8 @@
       // tree + crosswalk（可選：沒有樹的純 PCA 資料集也支援）
       var treeMeta = manifest.tree || {};
       model.treeNewick = null;
-      model.tipToSpecies = {};
+      model.tipToSpecies = {};        // tip → 代表 species（供著色/hover；1:1 或多對一取其一）
+      model.tipToSpeciesList = {};    // tip → 該 tip 對應的所有 species（支援科級樹一對多）
       model.speciesToTip = {};
       model.hasTree = !!(treeMeta.path && zip.file(treeMeta.path));
       if (model.hasTree) {
@@ -132,6 +133,7 @@
           jobs.push(readText(treeMeta.tip_id_map).then(function (t) {
             toObjects(t).rows.forEach(function (r) {
               model.tipToSpecies[r.tip_label] = r.species_id;
+              (model.tipToSpeciesList[r.tip_label] || (model.tipToSpeciesList[r.tip_label] = [])).push(r.species_id);
               model.speciesToTip[r.species_id] = r.tip_label;
             });
           }));
@@ -186,14 +188,18 @@
   }
 
   // 瀏覽器端 join key 驗證：scores ∩ 樹(crosswalk) ∩ taxa
+  // 樹可為物種級（tip↔species 1:1）或科級（tip↔多 species）。硬性錯誤只在
+  // 「交叉表映射到的 species 不存在於 taxa」；反向「taxa 未上樹」僅作提示（科級樹或
+  // 局部樹本就可能有物種無對應 tip，如無樹目的類群）。
   function validateJoinKeys(model) {
     var taxaIds = new Set(Object.keys(model.taxa));
-    var treeIds = new Set(Object.values(model.tipToSpecies));
-    var problems = [];
+    var mappedSpecies = new Set(Object.keys(model.speciesToTip));  // 有對應 tip 的 species
+    var tipCount = Object.keys(model.tipToSpeciesList || {}).length;
+    var problems = [], warnings = [];
 
-    if (model.hasTree && treeIds.size) {
-      treeIds.forEach(function (id) { if (!taxaIds.has(id)) problems.push("樹物種不在 taxa：" + id); });
-      taxaIds.forEach(function (id) { if (!treeIds.has(id)) problems.push("taxa 物種不在樹：" + id); });
+    if (model.hasTree && mappedSpecies.size) {
+      mappedSpecies.forEach(function (id) { if (!taxaIds.has(id)) problems.push("樹交叉表物種不在 taxa：" + id); });
+      taxaIds.forEach(function (id) { if (!mappedSpecies.has(id)) warnings.push("taxa 物種未對應樹 tip：" + id); });
     }
     model.viewOrder.forEach(function (vid) {
       model.views[vid].ids.forEach(function (id) {
@@ -202,8 +208,9 @@
     });
 
     model.joinReport = {
-      nTaxa: taxaIds.size, nTree: treeIds.size,
-      problems: problems.slice(0, 20), problemCount: problems.length
+      nTaxa: taxaIds.size, nTree: model.hasTree ? tipCount : 0,
+      problems: problems.slice(0, 20), problemCount: problems.length,
+      warningCount: warnings.length
     };
     if (problems.length)
       throw err("join key 不一致（" + problems.length + " 處），例：\n  " + problems.slice(0, 5).join("\n  "));

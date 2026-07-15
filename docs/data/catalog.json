@@ -14,6 +14,13 @@
       "short": "三葉蟲",
       "description": "762 物種 · 頭部形態空間（單一 PCA，無樹）",
       "zip": "data/trilobite.zip"
+    },
+    {
+      "id": "fishes",
+      "title": "Inland fish body shape (Torgersen et al. 2023)",
+      "short": "內陸魚類體型",
+      "description": "232 標本 · 3D 體型形態空間 + 科級親緣樹",
+      "zip": "data/fish.zip"
     }
   ]
 }

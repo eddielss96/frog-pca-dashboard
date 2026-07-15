@@ -27,6 +27,8 @@
       // 候選分組欄位：排除 id / 顯示名稱 / 圖片，且需為「類別型」（相異值不過多）
       var exclude = {};
       exclude[model.idCol] = 1; exclude[model.displayLabelCol] = 1; exclude[model.imageCol] = 1;
+      if (model.outlineCol) exclude[model.outlineCol] = 1;
+      if (model.imageCaptionCol) exclude[model.imageCaptionCol] = 1;
       var cols = Object.keys((model.taxa[model.taxaOrder[0]] || {}));
       var n = model.taxaOrder.length;
       this.candidates = cols.filter(function (c) {

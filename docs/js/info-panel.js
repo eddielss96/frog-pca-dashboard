@@ -16,9 +16,21 @@
     var name = t[model.displayLabelCol] || sid;
     var g = Store.groupOf(sid);
     var groupHTML = g ? global.FrogDash.svgSymbol(g.symbol, g.color, 14) + "<span>" + esc(g.label) + "</span>" : "";
-    var url = model.imageURLs[sid];
-    var imgHTML = url
-      ? '<div class="info-image-wrap"><img src="' + url + '" alt="' + esc(name) + '"/></div>'
+    // 影像區：照片（可選，含來源標註）＋ 形態輪廓（可選）並存；皆缺則佔位
+    var photo = model.imageURLs[sid];
+    var outline = model.outlineURLs ? model.outlineURLs[sid] : null;
+    var caption = model.imageCaptionCol ? t[model.imageCaptionCol] : "";
+    var figs = "";
+    if (photo) {
+      figs += '<figure class="info-fig"><img src="' + photo + '" alt="' + esc(name) + '"/>' +
+        (caption ? '<figcaption>' + esc(caption) + '</figcaption>' : '') + '</figure>';
+    }
+    if (outline) {
+      figs += '<figure class="info-fig outline"><img src="' + outline + '" alt="' + esc(name) + ' 輪廓"/>' +
+        '<figcaption>本種頭盾輪廓</figcaption></figure>';
+    }
+    var imgHTML = figs
+      ? '<div class="info-image-wrap' + (photo && outline ? ' dual' : '') + '">' + figs + '</div>'
       : '<div class="info-image-wrap placeholder"></div>';
     var rows = "<tr><td class='k'>species_id</td><td>" + esc(sid) + "</td></tr>";
     (model.infoFields || []).forEach(function (f) {

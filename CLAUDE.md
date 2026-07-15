@@ -7,7 +7,7 @@
 用資料集選單切換。線上版部署在 GitHub Pages。
 
 - 公開站：`https://eddielss96.github.io/frog-pca-dashboard/`
-- 目前案例：`frogs`（Sherratt 2017，青蛙/蝌蚪，含樹）、`trilobites`（Drage & Pates 2025，三葉蟲，無樹）
+- 目前案例：`frogs`（Sherratt 2017，青蛙/蝌蚪，含物種級樹）、`trilobites`（Drage & Pates 2025，三葉蟲，無樹）、`fishes`（Torgersen 2023，內陸魚類體型，含**科級樹**：一個科 tip 對應該科所有標本，clade 分色）
 
 ## 最高原則（不可妥協）
 1. **無伺服器**：最終是純靜態網站，能直接放 GitHub Pages，開啟不需後端。

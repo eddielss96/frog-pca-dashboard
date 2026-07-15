@@ -224,10 +224,15 @@
       try { if (picked.id != null) full = this.tree.findNodeById(picked.id) || picked; } catch (e) {}
       var leaves = collectLeaves(full);
       var model = this.model;
-      var species = leaves.map(function (l) {
+      var species = [];
+      leaves.forEach(function (l) {
         var tip = l.label != null ? l.label : l.id;
-        return model.tipToSpecies[tip] || tip;
-      }).filter(Boolean);
+        // 科級樹：一個 tip 對應多個標本，全部高亮；否則退回 1:1
+        var list = model.tipToSpeciesList && model.tipToSpeciesList[tip];
+        if (list && list.length) species = species.concat(list);
+        else if (model.tipToSpecies[tip]) species.push(model.tipToSpecies[tip]);
+        else species.push(tip);
+      });
       if (!species.length) return;
       if (species.length === 1) Store.focus(species[0], "tree");
       Store.setHighlight(species, "tree");

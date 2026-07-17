@@ -21,6 +21,13 @@
       "short": "內陸魚類體型",
       "description": "232 標本 · 3D 體型形態空間 + 科級親緣樹",
       "zip": "data/fish.zip"
+    },
+    {
+      "id": "otoliths",
+      "title": "Sagitta otolith diversification (Van Damme et al. 2024)",
+      "short": "魚類耳石",
+      "description": "697 種 · 側視＋背視耳石形態空間 + 物種級親緣樹（依體型分色）",
+      "zip": "data/otolith.zip"
     }
   ]
 }

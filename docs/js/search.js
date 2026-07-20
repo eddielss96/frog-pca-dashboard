@@ -104,12 +104,12 @@
     pill.appendChild(ripple);
     setTimeout(function () { ripple.remove(); }, 800);
 
+    var BURST = ["#0072B2", "#56B4E9", "#009E73", "#7fd3f0", "#005b8f"];  // dashboard 藍/青綠色盤
     for (var i = 0; i < 14; i++) {
       var d = document.createElement("span");
       d.className = "sb-click";
       d.style.left = x + "px"; d.style.top = y + "px";
-      var r = Math.floor(Math.random() * 255), g = Math.floor(Math.random() * 200 + 55), bl = Math.floor(Math.random() * 255);
-      d.style.background = "rgba(" + r + "," + g + "," + bl + ",0.85)";
+      d.style.background = BURST[Math.floor(Math.random() * BURST.length)];
       d.style.setProperty("--tx", ((Math.random() - 0.5) * 160).toFixed(0) + "px");
       d.style.setProperty("--ty", ((Math.random() - 0.5) * 160).toFixed(0) + "px");
       d.style.setProperty("--s", (Math.random() * 0.8 + 0.2).toFixed(2));

@@ -21,8 +21,31 @@
       <label>資料集 <select id="dataset-picker" class="axis-select"></select></label>
     </div>
     <div class="topbar-actions">
-      <div class="search-wrap">
-        <input id="search-input" type="search" placeholder="搜尋物種…" autocomplete="off" aria-label="搜尋物種" />
+      <div class="search-wrap" id="search-wrap">
+        <!-- gooey 濾鏡（粒子融合效果）；純 SVG，無外部依賴 -->
+        <svg class="gooey-defs" aria-hidden="true"><defs>
+          <filter id="gooey-effect">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+            <feColorMatrix in="blur" type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -8" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+        </defs></svg>
+        <form class="sb-form" id="sb-form" autocomplete="off">
+          <div class="sb-pill" id="sb-pill">
+            <span class="sb-gradient" aria-hidden="true"></span>
+            <span class="sb-particles" id="sb-particles" aria-hidden="true"></span>
+            <span class="sb-icon" id="sb-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+              </svg>
+            </span>
+            <input id="search-input" class="sb-input" type="text" placeholder="搜尋物種…" aria-label="搜尋物種" />
+            <button type="submit" class="sb-submit" id="sb-submit" tabindex="-1">Search</button>
+            <span class="sb-topglow" aria-hidden="true"></span>
+          </div>
+        </form>
         <ul id="search-results" class="search-results" hidden></ul>
       </div>
       <button id="side-panel-toggle" class="btn" title="開關側邊物種資訊面板">📋 側邊面板</button>

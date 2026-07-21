@@ -135,6 +135,29 @@
       modeSeg.querySelectorAll(".seg-btn").forEach(function (b) { b.classList.toggle("active", b === btn); });
       FD.TreeView.setMode(btn.dataset.mode);
     });
+    var layoutSeg = document.getElementById("tree-layout");
+    if (layoutSeg) layoutSeg.addEventListener("click", function (e) {
+      var btn = e.target.closest(".seg-btn"); if (!btn) return;
+      layoutSeg.querySelectorAll(".seg-btn").forEach(function (b) { b.classList.toggle("active", b === btn); });
+      FD.TreeView.setLayout(btn.dataset.layout);
+    });
+    var labelsBtn = document.querySelector(".labels-tree");
+    if (labelsBtn) labelsBtn.addEventListener("click", function () {
+      labelsBtn.classList.toggle("active", FD.TreeView.toggleLabels());
+    });
+
+    // 載入資料後，同步樹工具列（佈局/標籤/收合）狀態到目前資料集的自適應預設
+    Store.on("data", function () {
+      setTimeout(function () {
+        var tv = FD.TreeView;
+        if (layoutSeg) layoutSeg.querySelectorAll(".seg-btn").forEach(function (b) {
+          b.classList.toggle("active", b.dataset.layout === tv.layout);
+        });
+        if (labelsBtn) labelsBtn.classList.toggle("active", !!tv.labelsOn);
+        var ex = document.querySelector(".expand-tree");
+        if (ex) ex.textContent = tv.expandedAll ? "收合深層" : "展開全部";
+      }, 60);
+    });
   }
 
   function main() {

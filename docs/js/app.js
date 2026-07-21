@@ -142,9 +142,13 @@
       FD.TreeView.setLayout(btn.dataset.layout);
     });
     var labelsBtn = document.querySelector(".labels-tree");
-    if (labelsBtn) labelsBtn.addEventListener("click", function () {
-      labelsBtn.classList.toggle("active", FD.TreeView.toggleLabels());
-    });
+    if (labelsBtn) {
+      labelsBtn.addEventListener("click", function () {
+        labelsBtn.classList.toggle("active", FD.TreeView.toggleLabels());
+      });
+      // 縮放時自動顯示/隱藏標籤 → 同步按鈕高亮
+      FD.TreeView._onLabelsAuto = function (on) { labelsBtn.classList.toggle("active", on); };
+    }
 
     // 載入資料後，同步樹工具列（佈局/標籤/收合）狀態到目前資料集的自適應預設
     Store.on("data", function () {

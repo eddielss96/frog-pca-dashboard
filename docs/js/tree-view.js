@@ -68,9 +68,10 @@
       this.build();
       return this.layout;
     },
-    // 顯示 / 隱藏 tip 物種標籤
+    // 顯示 / 隱藏 tip 物種標籤（手動切換 → 停用「依縮放自動顯示」）
     toggleLabels: function () {
       this.labelsOn = !this.labelsOn;
+      this.labelsAuto = false;
       if (this.tree) {
         try { this.tree.setProps({ showLabels: this.labelsOn, showLeafLabels: this.labelsOn }); }
         catch (e) { this.build(); }
@@ -103,6 +104,7 @@
                    (model.treeNewick.match(/[,(]/g) || []).length;
       this.layout = this.nTips > 60 ? "cr" : "rc";
       this.labelsOn = this.nTips <= 150;
+      this.labelsAuto = true;    // 自動依縮放顯示標籤（使用者手動切換後停用）
       this.fontSize = this.nTips <= 80 ? 13 : this.nTips <= 200 ? 10 : this.nTips <= 400 ? 8 : 6;
       this.expandedAll = true;   // 預設顯示完整樹（不強制收合，避免大樹只剩空骨幹）
       try {
@@ -163,6 +165,13 @@
       if (!this.expandedAll) this.collapseDeep(4);
 
       if (this._ro) { try { this._ro.disconnect(); this._ro.observe(this.host); } catch (e) {} }
+      // 滾輪縮放（debounce）→ 大樹放大時自動顯示標籤（僅綁一次，TreeView 為單例）
+      if (!this._wheelBound) {
+        this._wheelBound = true;
+        this.el.addEventListener("wheel", function () {
+          clearTimeout(self._zt); self._zt = setTimeout(function () { self.maybeAutoLabels(); }, 180);
+        }, { passive: true });
+      }
       // 待容器尺寸穩定後填滿畫面（避免只佔左側一小塊 / 上下被裁切）
       requestAnimationFrame(function () { self.resize(); self.applyHighlight(Store.highlight); });
       setTimeout(function () { self.resize(); }, 120);
@@ -189,6 +198,21 @@
     fit: function () {
       if (!this.tree) return;
       try { this.tree.fitInCanvas(); } catch (e) { /* 某些版本可能無此方法 */ }
+      try { this._fitZoom = this.tree.getZoom(); } catch (e) { this._fitZoom = null; }
+    },
+
+    // 大樹（標籤預設關）放大到一定程度時，自動顯示物種標籤；縮回則自動隱藏。
+    // 使用者手動按「標籤」後即停用此自動行為（labelsAuto=false）。
+    maybeAutoLabels: function () {
+      if (!this.tree || !this.labelsAuto || this._fitZoom == null) return;
+      if (this.nTips <= 150) return;              // 小樹本就顯示標籤
+      var z; try { z = this.tree.getZoom(); } catch (e) { return; }
+      var want = (z - this._fitZoom) >= 1.0;      // 約放大 2 倍以上才顯示
+      if (want !== this.labelsOn) {
+        this.labelsOn = want;
+        try { this.tree.setProps({ showLabels: want, showLeafLabels: want }); } catch (e) {}
+        if (this._onLabelsAuto) this._onLabelsAuto(want);
+      }
     },
 
     buildMapsAndStyles: function () {

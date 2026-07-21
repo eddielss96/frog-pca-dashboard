@@ -100,11 +100,16 @@
       <div class="panel-head">
         <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
         <div class="axis-ctrls">
+          <div class="seg" id="tree-layout" role="group" aria-label="樹佈局">
+            <button class="seg-btn" data-layout="rc" title="矩形佈局（適合小樹、便於閱讀標籤）">▭ 矩形</button>
+            <button class="seg-btn" data-layout="cr" title="環狀佈局（適合大樹、一眼看全貌）">◎ 環狀</button>
+          </div>
           <div class="seg" id="tree-mode" role="group" aria-label="樹顯示模式">
             <button class="seg-btn active" data-mode="clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
             <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
           </div>
-          <button class="btn small expand-tree" title="展開全部 / 收合深層">展開全部</button>
+          <button class="btn small labels-tree" title="顯示 / 隱藏物種標籤">🏷 標籤</button>
+          <button class="btn small expand-tree" title="展開全部 / 收合深層">收合深層</button>
           <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
           <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>
         </div>

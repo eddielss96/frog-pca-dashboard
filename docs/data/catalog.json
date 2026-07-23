@@ -35,6 +35,13 @@
       "short": "龜殼",
       "description": "274 種 · 3D 殼形態空間（53 地標）+ 物種級親緣樹（水生/陸生分色）",
       "zip": "data/turtle.zip"
+    },
+    {
+      "id": "forams",
+      "title": "Santa Barbara Basin benthic foraminifera (Kahanamoku et al. 2024)",
+      "short": "底棲有孔蟲",
+      "description": "36 種 · AutoMorph 2D 形態屬性 PCA（無樹，依屬分色）· 800 年沉積記錄",
+      "zip": "data/foram.zip"
     }
   ]
 }

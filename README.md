@@ -13,6 +13,7 @@
   | `fishes` | Torgersen et al. 2023 | 下密西西比魚類體型 3D 幾何形態測量，232 標本，單一形態空間 + **科級親緣樹**（一個科 tip 對應該科所有標本），依主要類群 clade 著色。[doi:10.1038/s41598-023-48086-5](https://doi.org/10.1038/s41598-023-48086-5) |
   | `otoliths` | Van Damme et al. 2024 | 魚類 sagitta 耳石形態，697 種，**側視＋背視兩個形態空間** + 物種級親緣樹，GPA+PCA 由 R geomorph 於匯出階段算好；依體型分色、10 個生態欄位可切換分組。[doi:10.1093/biolinnean/blae085](https://doi.org/10.1093/biolinnean/blae085) |
   | `turtles` | Stayton et al. 2018 | 硬殼龜殼形態，274 種（2722 標本、53 個 3D 地標），3D GPA→物種平均→PCA 由 R geomorph 算好 + 物種級親緣樹；依棲地（水生/陸生）分色，Family 可切換。[doi:10.1111/evo.13561](https://doi.org/10.1111/evo.13561) |
+  | `forams` | Kahanamoku et al. 2024 | 聖塔芭芭拉盆地底棲有孔蟲 AutoMorph 2D 形態，36 種（合併 2.3 萬物件、每物種平均 9 個 2D 屬性），相關矩陣 PCA（大小取 log）於匯出階段用 Python 算好，無樹、依屬分色。[doi:10.1038/s41597-024-02934-9](https://doi.org/10.1038/s41597-024-02934-9) |
 
 ## 最高原則
 1. **無伺服器**：最終成品是純靜態網站，可直接放 GitHub Pages 永久運作，開啟不需後端、

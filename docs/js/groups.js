@@ -33,13 +33,16 @@
       var n = model.taxaOrder.length;
       this.candidates = cols.filter(function (c) {
         if (exclude[c]) return false;
-        var vals = {}, nonEmpty = 0;
+        var vals = {}, nonEmpty = 0, numeric = 0;
         model.taxaOrder.forEach(function (sid) {
           var v = model.taxa[sid][c];
-          if (v != null && v !== "") { vals[v] = 1; nonEmpty++; }
+          if (v != null && v !== "") { vals[v] = 1; nonEmpty++; if (!isNaN(parseFloat(v)) && isFinite(v)) numeric++; }
         });
         var d = Object.keys(vals).length;
-        return nonEmpty > 0 && d >= 1 && d <= Math.max(2, Math.min(40, n)); // 太多相異值不適合著色
+        // 純數值欄位（計數/年代/ID）不適合當分組著色；近乎唯一（>85% 相異）者也排除
+        if (nonEmpty > 0 && numeric === nonEmpty) return false;
+        if (d > Math.max(2, 0.85 * nonEmpty)) return false;
+        return nonEmpty > 0 && d >= 1 && d <= Math.max(2, Math.min(40, n));
       });
       if (this.candidates.indexOf(this.defaultField) < 0 && this.candidates.length)
         this.defaultField = this.candidates[0];

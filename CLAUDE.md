@@ -7,7 +7,7 @@
 用資料集選單切換。線上版部署在 GitHub Pages。
 
 - 公開站：`https://eddielss96.github.io/frog-pca-dashboard/`
-- 目前案例：`frogs`（Sherratt 2017，青蛙/蝌蚪，含物種級樹）、`trilobites`（Drage & Pates 2025，三葉蟲，無樹）、`fishes`（Torgersen 2023，內陸魚類體型，含**科級樹**：一個科 tip 對應該科所有標本，clade 分色）、`otoliths`（Van Damme 2024，魚類耳石，**側視＋背視雙形態空間**＋物種級樹，GPA+PCA 由 R geomorph 匯出時算，10 生態欄位可切換分組）、`turtles`（Stayton 2018，龜殼，2722 標本 53 個 3D 地標→物種平均→PCA，物種級樹，依棲地水生/陸生分色）
+- 目前案例：`frogs`（Sherratt 2017，青蛙/蝌蚪，含物種級樹）、`trilobites`（Drage & Pates 2025，三葉蟲，無樹）、`fishes`（Torgersen 2023，內陸魚類體型，含**科級樹**：一個科 tip 對應該科所有標本，clade 分色）、`otoliths`（Van Damme 2024，魚類耳石，**側視＋背視雙形態空間**＋物種級樹，GPA+PCA 由 R geomorph 匯出時算，10 生態欄位可切換分組）、`turtles`（Stayton 2018，龜殼，2722 標本 53 個 3D 地標→物種平均→PCA，物種級樹，依棲地水生/陸生分色）、`forams`（Kahanamoku 2024，聖塔芭芭拉盆地底棲有孔蟲，AutoMorph 2D 屬性→每物種平均→相關矩陣 PCA，無樹，依屬分色）
 
 ## 最高原則（不可妥協）
 1. **無伺服器**：最終是純靜態網站，能直接放 GitHub Pages，開啟不需後端。

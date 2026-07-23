@@ -42,6 +42,13 @@
       "short": "底棲有孔蟲",
       "description": "36 種 · AutoMorph 2D 形態屬性 PCA（無樹，依屬分色）· 800 年沉積記錄",
       "zip": "data/foram.zip"
+    },
+    {
+      "id": "forams-objects",
+      "title": "SBB benthic foraminifera — per object (Kahanamoku et al. 2024)",
+      "short": "底棲有孔蟲（逐物件）",
+      "description": "23,210 個物件 · 每物件 2D 形態 PCA（依屬分色，可切岩芯/年代）· 800 年記錄",
+      "zip": "data/foram_objects.zip"
     }
   ]
 }

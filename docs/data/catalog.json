@@ -49,6 +49,13 @@
       "short": "底棲有孔蟲（逐物件）",
       "description": "23,210 個物件 · 每物件 2D 形態 PCA（依屬分色，可切岩芯/年代）· 800 年記錄",
       "zip": "data/foram_objects.zip"
+    },
+    {
+      "id": "characiforms",
+      "title": "Characiform body-shape diversification (Burns & Sidlauskas 2019)",
+      "short": "脂鯉體型",
+      "description": "116 種脂鯉目魚類體型 · 幾何形態測量 PCA + 物種級親緣樹（依科分色，13 科）",
+      "zip": "data/characiform.zip"
     }
   ]
 }

@@ -99,16 +99,21 @@ select option { background: #15160f; color: var(--ink); }
 .file-btn { position: relative; }
 
 /* ---- 搜尋欄：聚焦展開 + 漸層流光 + gooey 粒子 + 點擊漣漪/爆散 + 動畫建議清單（vanilla）---- */
-.search-wrap { position: relative; flex: 1; min-width: 0; max-width: 560px; }
+.search-wrap { position: relative; }
 .gooey-defs { position: absolute; width: 0; height: 0; }
 .sb-form { position: relative; display: flex; align-items: center; }
+/* 沿用原本的搜尋欄動畫：聚焦時膠囊展開（320→460px）＋輕微放大，配深色主題 */
 .sb-pill {
-  position: relative; display: flex; align-items: center; overflow: hidden; width: 100%;
-  border-radius: 14px; cursor: text; height: 52px;
+  position: relative; display: flex; align-items: center; overflow: hidden; width: 320px; height: 52px;
+  border-radius: 999px; cursor: text;
   border: 1px solid var(--line-strong); background: var(--panel-2);
-  transition: box-shadow .35s ease, border-color .35s ease;
+  transition: width .35s cubic-bezier(.2,.8,.2,1), transform .35s cubic-bezier(.2,.8,.2,1),
+              box-shadow .35s ease, border-color .35s ease;
 }
-.search-wrap.focused .sb-pill { border-color: rgba(212,251,60,.4); box-shadow: 0 15px 35px rgba(0,0,0,.4); }
+.search-wrap.focused .sb-pill {
+  width: 460px; transform: scale(1.03); border-color: rgba(212,251,60,.4);
+  box-shadow: 0 15px 35px rgba(0,0,0,.45);
+}
 .search-wrap.clicked .sb-pill { box-shadow: 0 0 40px rgba(212,251,60,.28), 0 0 15px rgba(212,251,60,.35) inset; }
 
 .sb-gradient { position: absolute; inset: 0; z-index: 0; opacity: 0; pointer-events: none;
@@ -120,7 +125,7 @@ select option { background: #15160f; color: var(--ink); }
   66%  { background: linear-gradient(90deg, #009E73, #d4fb3c); }
   100% { background: linear-gradient(90deg, #d4fb3c, #a7e05a); }
 }
-.sb-particles { position: absolute; inset: 0; border-radius: 14px; overflow: hidden;
+.sb-particles { position: absolute; inset: 0; border-radius: 999px; overflow: hidden;
   pointer-events: none; z-index: 0; filter: url(#gooey-effect); }
 .sb-particle { position: absolute; width: 12px; height: 12px; border-radius: 999px;
   background: linear-gradient(90deg, #d4fb3c, #a7e05a); filter: blur(2px);
@@ -137,7 +142,7 @@ select option { background: #15160f; color: var(--ink); }
   from { transform: translate(0,0) scale(0); opacity: 1; }
   to   { transform: translate(var(--tx), var(--ty)) scale(var(--s,.5)); opacity: 0; }
 }
-.sb-ripple { position: absolute; inset: 0; border-radius: 14px; z-index: 1; pointer-events: none;
+.sb-ripple { position: absolute; inset: 0; border-radius: 999px; z-index: 1; pointer-events: none;
   background: rgba(212,251,60,.10); animation: sbRipple .8s ease-out forwards; }
 @keyframes sbRipple { from { transform: scale(0); opacity: .7; } to { transform: scale(2); opacity: 0; } }
 
@@ -161,7 +166,7 @@ select option { background: #15160f; color: var(--ink); }
 .search-wrap.has-text .sb-submit { opacity: 1; transform: none; pointer-events: auto; }
 .sb-submit:hover { background: var(--accent-hi); }
 .sb-submit:active { transform: scale(.95); }
-.sb-topglow { position: absolute; inset: 0; border-radius: 14px; pointer-events: none; z-index: 1;
+.sb-topglow { position: absolute; inset: 0; border-radius: 999px; pointer-events: none; z-index: 1;
   opacity: 0; background: radial-gradient(circle at 50% 0%, rgba(212,251,60,.5), transparent 70%); }
 .search-wrap.focused .sb-topglow { animation: sbGlow 2s ease-in-out infinite; }
 @keyframes sbGlow { 0%,100% { opacity: 0; } 50% { opacity: .16; } }

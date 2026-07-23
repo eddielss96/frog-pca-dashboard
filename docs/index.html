@@ -14,7 +14,7 @@
 <body>
   <header class="topbar">
     <div class="title">
-      <h1>形態空間 PCA Dashboard</h1>
+      <h1><span class="logo">形</span><span class="wm">MORPHO<span>/ PCA</span></span></h1>
       <p id="dataset-subtitle" class="subtitle">蝌蚪 PCA · 成體 PCA · 親緣關係樹（三視圖連動）</p>
     </div>
     <div class="dataset-switch" id="dataset-switch" hidden>
@@ -78,6 +78,9 @@
 
   <!-- 主介面 -->
   <main id="dashboard" class="dashboard" hidden>
+    <!-- 概覽頭部：hero + 統計卡/量規 + 資料集摘要面板；由 overview.js 依真實資料填入 -->
+    <div class="overview-head" id="overview-head"></div>
+
     <!-- PCA 視圖依 manifest 動態產生（支援任意數量的視圖）-->
     <div class="pca-row" id="pca-row"></div>
 
@@ -120,6 +123,15 @@
         <p class="dim">PCA 圖仍可正常使用；點擊樹分支高亮 clade 的功能在此環境停用。</p>
       </div>
     </section>
+
+    <!-- 近期檢視的物種：由 overview.js 追蹤 focus 事件填入 -->
+    <div class="recent-section" id="recent-section" hidden>
+      <div class="recent-head">
+        <span class="t">近期檢視的物種</span>
+        <span class="dim small">最近在形態空間中點選 / 釘選的物種 — 點卡片開啟側邊詳細資訊</span>
+      </div>
+      <div class="recent-grid" id="recent-grid" style="margin-top:12px;"></div>
+    </div>
   </main>
 
   <!-- 滑鼠移到點上浮出的資訊卡 -->
@@ -144,6 +156,7 @@
   <script src="js/tree-view.js"></script>
   <script src="js/info-panel.js"></script>
   <script src="js/search.js"></script>
+  <script src="js/overview.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

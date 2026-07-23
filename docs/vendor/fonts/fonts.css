@@ -1,0 +1,11 @@
+/* 本地 vendored 字型（Archivo + IBM Plex Mono）；禁用 CDN、可離線。
+   來源 Google Fonts（Open Font License），已下載 woff2 至本目錄。 */
+@font-face{font-family:'Archivo';font-style:normal;font-weight:400;font-display:swap;src:url('Archivo-400.woff2') format('woff2');}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:500;font-display:swap;src:url('Archivo-500.woff2') format('woff2');}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:600;font-display:swap;src:url('Archivo-600.woff2') format('woff2');}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:700;font-display:swap;src:url('Archivo-700.woff2') format('woff2');}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:800;font-display:swap;src:url('Archivo-800.woff2') format('woff2');}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:900;font-display:swap;src:url('Archivo-900.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url('IBMPlexMono-400.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('IBMPlexMono-500.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url('IBMPlexMono-600.woff2') format('woff2');}

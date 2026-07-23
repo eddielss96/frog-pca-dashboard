@@ -139,7 +139,11 @@
         fontSize: this.fontSize,
         interactive: true,
         nodeSize: this.nTips > 200 ? 4 : 6,
-        highlightColour: [255, 165, 0, 255],
+        highlightColour: [212, 251, 60, 255],       // 萊姆綠高亮，配深色主題
+        strokeColour: [255, 255, 255, 105],          // 淺色分支（深底可見）
+        lineColour: [255, 255, 255, 105],
+        fontColour: [201, 203, 190, 255],            // 淺色物種標籤
+        backgroundColour: [0, 0, 0, 0],              // 透明；由 .tree-host 提供深色底
         padding: this.layout === "cr" ? 24 : 12
       });
 

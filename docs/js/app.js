@@ -173,6 +173,7 @@
     FD.TreeView.init();
     FD.initInfoPanel();
     FD.initSearch();
+    if (FD.initOverview) FD.initOverview();
     initLoaders();
     initButtons();
 

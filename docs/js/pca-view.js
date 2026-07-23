@@ -92,12 +92,17 @@
       tr.y = tr.customdata.map(function (sid) { return view.scores[sid][py]; });
     });
     var rng = this.computeRange(px, py);
+    var GRID = "rgba(255,255,255,.06)", ZERO = "rgba(255,255,255,.14)", FG = "#8f9184";
     var layout = {
       margin: { l: 44, r: 10, t: 8, b: 38 },
-      xaxis: { title: { text: px, font: { size: 11 } }, zeroline: true, zerolinecolor: "#e2e6eb", autorange: false, range: rng.x.slice() },
-      yaxis: { title: { text: py, font: { size: 11 } }, scaleanchor: "x", scaleratio: 1, zeroline: true, zerolinecolor: "#e2e6eb", autorange: false, range: rng.y.slice() },
+      font: { color: FG, family: "Archivo, system-ui, sans-serif", size: 11 },
+      xaxis: { title: { text: px, font: { size: 11, color: FG } }, gridcolor: GRID, tickfont: { color: FG },
+               zeroline: true, zerolinecolor: ZERO, autorange: false, range: rng.x.slice() },
+      yaxis: { title: { text: py, font: { size: 11, color: FG } }, gridcolor: GRID, tickfont: { color: FG }, scaleanchor: "x", scaleratio: 1,
+               zeroline: true, zerolinecolor: ZERO, autorange: false, range: rng.y.slice() },
       showlegend: false, hovermode: "closest", dragmode: "pan",
-      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)"
+      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+      hoverlabel: { bgcolor: "#15160f", bordercolor: "rgba(255,255,255,.15)", font: { color: "#f3f4ee", family: "Archivo" } }
     };
     var config = { displayModeBar: false, responsive: true, scrollZoom: true };
     var self = this;

@@ -12,7 +12,7 @@
       d=p==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p;
       r.setAttribute('data-theme',d);r.setAttribute('data-accent',a);}catch(e){}})();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
   <!-- 所有函式庫一律 vendor 在本地，禁用 CDN（永久保存、可離線開啟）-->
   <script src="vendor/jszip/jszip-3.10.1.min.js"></script>
   <script src="vendor/plotly/plotly-2.35.2.min.js"></script>
@@ -22,13 +22,13 @@
 <div class="app-shell">
   <header class="topbar">
     <nav class="nav-pills" id="nav-pills">
-      <button class="nav-pill active" data-screen="overview">概覽</button>
-      <button class="nav-pill" data-screen="analytics">分析</button>
-      <button class="nav-pill" data-screen="welcome">載入資料</button>
-      <a class="nav-pill" href="builder.html">建立精靈</a>
+      <button class="nav-pill active" data-screen="overview" data-i18n="nav.overview">概覽</button>
+      <button class="nav-pill" data-screen="analytics" data-i18n="nav.analytics">分析</button>
+      <button class="nav-pill" data-screen="welcome" data-i18n="nav.load">載入資料</button>
+      <a class="nav-pill" href="builder.html" data-i18n="nav.builder">建立精靈</a>
     </nav>
     <div class="dataset-switch" id="dataset-switch" hidden>
-      <label>資料集 <select id="dataset-picker" class="axis-select"></select></label>
+      <label><span data-i18n="dataset.label">資料集</span> <select id="dataset-picker" class="axis-select"></select></label>
     </div>
       <div class="search-wrap" id="search-wrap">
         <!-- gooey 濾鏡（粒子融合效果）；純 SVG，無外部依賴 -->
@@ -50,7 +50,7 @@
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
               </svg>
             </span>
-            <input id="search-input" class="sb-input" type="text" placeholder="搜尋物種…" aria-label="搜尋物種" />
+            <input id="search-input" class="sb-input" type="text" placeholder="搜尋物種…" data-i18n-ph="search.ph" aria-label="搜尋物種" />
             <button type="submit" class="sb-submit" id="sb-submit" tabindex="-1">Search</button>
             <span class="sb-topglow" aria-hidden="true"></span>
           </div>
@@ -58,7 +58,8 @@
         <ul id="search-results" class="search-results" hidden></ul>
       </div>
       <div class="topbar-actions">
-        <button id="side-panel-toggle" class="nav-pill" title="開關側邊物種資訊面板">側邊面板</button>
+        <button id="overview-toggle" class="nav-pill" title="開關資料集總覽抽屜" data-i18n="btn.summary">資料總覽</button>
+        <button id="side-panel-toggle" class="nav-pill" title="開關側邊物種資訊面板" data-i18n="btn.panel">側邊面板</button>
         <button id="clear-btn" class="tile" title="清除目前的選取與高亮" aria-label="清除選取">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
@@ -70,14 +71,19 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
           </button>
           <div class="settings-menu" id="settings-menu" hidden>
-            <h4>設定</h4>
-            <div class="set-lbl">主題 / Theme</div>
-            <div class="set-row" id="set-theme">
-              <div class="set-opt" data-themepref="light">淺色</div>
-              <div class="set-opt" data-themepref="dark">深色</div>
-              <div class="set-opt" data-themepref="auto">自動</div>
+            <h4 data-i18n="set.title">設定</h4>
+            <div class="set-lbl" data-i18n="set.lang">語言 / Language</div>
+            <div class="set-row" id="set-lang">
+              <div class="set-opt" data-lang="zh">中文</div>
+              <div class="set-opt" data-lang="en">EN</div>
             </div>
-            <div class="set-lbl">主視覺色 / Accent</div>
+            <div class="set-lbl" data-i18n="set.theme">主題 / Theme</div>
+            <div class="set-row" id="set-theme">
+              <div class="set-opt" data-themepref="light" data-i18n="set.light">淺色</div>
+              <div class="set-opt" data-themepref="dark" data-i18n="set.dark">深色</div>
+              <div class="set-opt" data-themepref="auto" data-i18n="set.auto">自動</div>
+            </div>
+            <div class="set-lbl" data-i18n="set.accent">主視覺色 / Accent</div>
             <div class="accent-row" id="set-accent">
               <div class="accent-dot" data-accent="lime"   style="background:#d4fb3c;color:#d4fb3c"></div>
               <div class="accent-dot" data-accent="cyan"   style="background:#3fc0e0;color:#3fc0e0"></div>
@@ -99,15 +105,14 @@
   <!-- 起始畫面（尚未載入資料時）-->
   <section id="welcome" class="welcome">
     <div class="welcome-card">
-      <h2>載入資料以開始</h2>
-      <p>本工具讀取「統一 Zip」格式（由 R / Python / CSV 匯出器產生）。所有統計已在
-        匯出端算好，瀏覽器端只負責互動式呈現。</p>
-      <p class="dim">拖放 .zip 到此處，或用右上角「載入統一 Zip」。</p>
-      <button id="demo-btn" class="btn primary">載入青蛙範例資料</button>
-      <p id="demo-hint" class="dim small">（範例：Sherratt et al. 2017，澳洲青蛙與蝌蚪，166 物種）</p>
+      <h2 data-i18n="welcome.title">載入資料以開始</h2>
+      <p data-i18n="welcome.body">本工具讀取「統一 Zip」格式（由 R / Python / CSV 匯出器產生）。所有統計已在匯出端算好，瀏覽器端只負責互動式呈現。</p>
+      <p class="dim" data-i18n="welcome.drop">拖放 .zip 到此處，或用上方「載入資料」。</p>
+      <button id="demo-btn" class="btn primary" data-i18n="welcome.demo">載入青蛙範例資料</button>
+      <p id="demo-hint" class="dim small" data-i18n="welcome.demoHint">（範例：Sherratt et al. 2017，澳洲青蛙與蝌蚪，166 物種）</p>
       <hr class="welcome-sep" />
-      <p class="dim small">想用<strong>自己的 PCA 資料</strong>做一個像這樣的網頁？</p>
-      <a class="btn" href="builder.html">用建立精靈打包成自己的網站 →</a>
+      <p class="dim small" data-i18n="welcome.ownQ">想用自己的 PCA 資料做一個像這樣的網頁？</p>
+      <a class="btn" href="builder.html" data-i18n="welcome.buildLink">用建立精靈打包成自己的網站 →</a>
     </div>
   </section>
 
@@ -122,11 +127,11 @@
     <!-- 橫向圖例條：可切換分組欄位、色盲友善（色+形）、可自訂顏色/形狀 -->
     <section class="panel legend-bar">
       <div class="legend-left">
-        <label class="group-field-lbl">分組依 <select id="group-field" class="axis-select"></select></label>
+        <label class="group-field-lbl"><span data-i18n="group.by">分組依</span> <select id="group-field" class="axis-select"></select></label>
         <ul id="legend" class="legend-chips"></ul>
-        <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ 顏色/形狀</button>
+        <button id="group-settings-btn" class="btn small" title="自訂各分類的顏色與形狀">⚙ <span data-i18n="group.settings">顏色/形狀</span></button>
         <div id="group-settings" class="group-settings" hidden>
-          <div class="gs-head"><span>自訂顏色與形狀</span><button class="btn small gs-reset">重設為預設</button></div>
+          <div class="gs-head"><span data-i18n="group.customTitle">自訂顏色與形狀</span><button class="btn small gs-reset" data-i18n="group.reset">重設為預設</button></div>
           <div class="gs-list"></div>
         </div>
       </div>
@@ -136,34 +141,34 @@
     <!-- 親緣樹獨佔整列、加高，避免被裁切 -->
     <section class="panel tree-panel">
       <div class="panel-head">
-        <h2>親緣關係樹 <span class="dim small">（點分支高亮整個 clade）</span></h2>
+        <h2><span data-i18n="tree.title">親緣關係樹</span> <span class="dim small" data-i18n="tree.sub">（點分支高亮整個 clade）</span></h2>
         <div class="axis-ctrls">
           <div class="seg" id="tree-layout" role="group" aria-label="樹佈局">
-            <button class="seg-btn" data-layout="rc" title="矩形佈局（適合小樹、便於閱讀標籤）">▭ 矩形</button>
-            <button class="seg-btn" data-layout="cr" title="環狀佈局（適合大樹、一眼看全貌）">◎ 環狀</button>
+            <button class="seg-btn" data-layout="rc" data-i18n-title="tree.titleTip" title="矩形佈局（適合小樹、便於閱讀標籤）">▭ <span data-i18n="tree.rect">矩形</span></button>
+            <button class="seg-btn" data-layout="cr" data-i18n-title="tree.circTip" title="環狀佈局（適合大樹、一眼看全貌）">◎ <span data-i18n="tree.circ">環狀</span></button>
           </div>
           <div class="seg" id="tree-mode" role="group" aria-label="樹顯示模式">
-            <button class="seg-btn active" data-mode="clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
-            <button class="seg-btn" data-mode="phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
+            <button class="seg-btn active" data-mode="clado" data-i18n-title="tree.cladoTip" data-i18n="tree.clado" title="對齊 tips、依拓樸均勻鋪滿，最易辨認">整齊對齊</button>
+            <button class="seg-btn" data-mode="phylo" data-i18n-title="tree.phyloTip" data-i18n="tree.phylo" title="依實際演化分支長度繪製（時間樹）">分支長度</button>
           </div>
-          <button class="btn small labels-tree" title="顯示 / 隱藏物種標籤">🏷 標籤</button>
-          <button class="btn small expand-tree" title="展開全部 / 收合深層">收合深層</button>
-          <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ 自動縮放</button>
-          <button class="btn small dl-tree" title="下載樹 PNG">↓ PNG</button>
+          <button class="btn small labels-tree" title="顯示 / 隱藏物種標籤">🏷 <span data-i18n="tree.labels">標籤</span></button>
+          <button class="btn small expand-tree" data-i18n="tree.collapse" title="展開全部 / 收合深層">收合深層</button>
+          <button class="btn small fit-tree" title="自動縮放、填滿畫面">⤢ <span data-i18n="tree.fit">自動縮放</span></button>
+          <button class="btn small dl-tree" title="下載樹 PNG">↓ <span data-i18n="tree.png">PNG</span></button>
         </div>
       </div>
       <div class="tree-host"><div id="tree-view" class="tree"></div></div>
       <div id="tree-fallback" class="tree-fallback" hidden>
-        <p>⚠️ 此環境無法使用 WebGL，無法繪製互動式親緣樹。</p>
-        <p class="dim">PCA 圖仍可正常使用；點擊樹分支高亮 clade 的功能在此環境停用。</p>
+        <p data-i18n="tree.fallback1">⚠️ 此環境無法使用 WebGL，無法繪製互動式親緣樹。</p>
+        <p class="dim" data-i18n="tree.fallback2">PCA 圖仍可正常使用；點擊樹分支高亮 clade 的功能在此環境停用。</p>
       </div>
     </section>
 
     <!-- 近期檢視的物種：由 overview.js 追蹤 focus 事件填入 -->
     <div class="recent-section" id="recent-section" hidden>
       <div class="recent-head">
-        <span class="t">近期檢視的物種</span>
-        <span class="dim small">最近在形態空間中點選 / 釘選的物種 — 點卡片開啟側邊詳細資訊</span>
+        <span class="t" data-i18n="recent.title">近期檢視的物種</span>
+        <span class="dim small" data-i18n="recent.sub">最近在形態空間中點選 / 釘選的物種 — 點卡片開啟側邊詳細資訊</span>
       </div>
       <div class="recent-grid" id="recent-grid" style="margin-top:12px;"></div>
     </div>
@@ -175,26 +180,37 @@
   <!-- 點擊釘選的側邊常駐面板 -->
   <aside id="side-panel" class="side-panel" hidden>
     <div class="side-panel-head">
-      <span>物種資訊</span>
+      <span data-i18n="side.title">物種資訊</span>
       <button id="side-panel-close" class="modal-close" aria-label="關閉">×</button>
     </div>
     <div id="side-panel-body"></div>
+  </aside>
+
+  <!-- 資料集總覽抽屜（統計卡/量規/摘要移入此處）-->
+  <div id="overview-drawer-backdrop" class="drawer-backdrop" hidden></div>
+  <aside id="overview-drawer" class="side-panel overview-drawer" hidden>
+    <div class="side-panel-head">
+      <span data-i18n="drawer.title">資料集總覽</span>
+      <button id="overview-drawer-close" class="modal-close" aria-label="關閉">×</button>
+    </div>
+    <div id="overview-drawer-body"></div>
   </aside>
 
   </div><!-- /.app-shell -->
 
   <!-- 階段四烤入的資料（若存在則自動載入，開啟即看；無此檔則顯示上傳畫面）-->
   <script src="data/baked.js" onerror="window.__noBaked=1"></script>
-  <script src="js/state.js?v=7"></script>
-  <script src="js/zip-loader.js?v=7"></script>
-  <script src="js/groups.js?v=7"></script>
-  <script src="js/legend.js?v=7"></script>
-  <script src="js/pca-view.js?v=7"></script>
-  <script src="js/tree-view.js?v=7"></script>
-  <script src="js/info-panel.js?v=7"></script>
-  <script src="js/search.js?v=7"></script>
-  <script src="js/overview.js?v=7"></script>
-  <script src="js/theme.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/state.js?v=8"></script>
+  <script src="js/i18n.js?v=8"></script>
+  <script src="js/zip-loader.js?v=8"></script>
+  <script src="js/groups.js?v=8"></script>
+  <script src="js/legend.js?v=8"></script>
+  <script src="js/pca-view.js?v=8"></script>
+  <script src="js/tree-view.js?v=8"></script>
+  <script src="js/info-panel.js?v=8"></script>
+  <script src="js/search.js?v=8"></script>
+  <script src="js/overview.js?v=8"></script>
+  <script src="js/theme.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

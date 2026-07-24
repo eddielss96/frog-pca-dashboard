@@ -38,7 +38,16 @@
     if (sa) sa.querySelectorAll("[data-accent]").forEach(function (b) {
       b.classList.toggle("active", b.getAttribute("data-accent") === accent);
     });
+    syncLangUI();
   }
+  function syncLangUI() {
+    var sl = document.getElementById("set-lang");
+    var cur = (FD.i18n && FD.i18n.lang) || "zh";
+    if (sl) sl.querySelectorAll("[data-lang]").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-lang") === cur);
+    });
+  }
+  FD.syncLangUI = syncLangUI;
 
   if (mql) {
     var onScheme = function () { if (pref === "auto") { apply(); retheme(); } };
@@ -67,6 +76,10 @@
     var sa = document.getElementById("set-accent");
     if (sa) sa.addEventListener("click", function (e) {
       var b = e.target.closest("[data-accent]"); if (b) setAccent(b.getAttribute("data-accent"));
+    });
+    var sl = document.getElementById("set-lang");
+    if (sl) sl.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-lang]"); if (b && FD.i18n) FD.i18n.setLang(b.getAttribute("data-lang"));
     });
 
     // 分頁膠囊：概覽 / 分析 / 載入資料 / 建立精靈

@@ -76,8 +76,9 @@
     if (!meta) return;
     var bits = [];
     if (d.doi) bits.push('DOI <a href="https://doi.org/' + d.doi + '" target="_blank" rel="noopener">' + d.doi + '</a>');
-    if (d.source_url) bits.push('<a href="' + d.source_url + '" target="_blank" rel="noopener">原始資料來源</a>');
-    if (d.created_with) bits.push('產生方式：' + d.created_with);
+    var T = function (k, p) { return global.FrogDash.t ? global.FrogDash.t(k, p) : k; };
+    if (d.source_url) bits.push('<a href="' + d.source_url + '" target="_blank" rel="noopener">' + T("meta.source") + '</a>');
+    if (d.created_with) bits.push(T("meta.madeWith", { w: d.created_with }));
     meta.innerHTML = '<div class="row">' + bits.join(" · ") + '</div>' + (d.citation ? '<span class="cite">' + d.citation + '</span>' : "");
   }
 
@@ -119,4 +120,5 @@
 
   global.FrogDash = global.FrogDash || {};
   global.FrogDash.svgSymbol = svgSymbol;
+  global.FrogDash.Legend = { rerender: function () { if (Store.data) render(Store.data); } };  // 語言切換時重繪圖例/來源
 })(window);

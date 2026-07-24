@@ -71,23 +71,21 @@ body {
   font-family: 'Archivo', system-ui, -apple-system, "Noto Sans TC", "PingFang TC",
                "Microsoft JhengHei", Roboto, Helvetica, Arial, sans-serif;
   color: var(--ink); font-size: 14px; line-height: 1.45;
-  min-height: 100vh; padding: 22px;
+  min-height: 100vh; padding: 0; background: var(--app);
+}
+
+/* 全螢幕：App 佔滿整個視窗，無外圍圓角/邊框；保留頂部漸層流光 */
+.app-shell {
+  max-width: none; margin: 0; border: none; border-radius: 0; box-shadow: none;
+  padding: 18px 22px; min-height: 100vh;
+  display: flex; flex-direction: column;
   background:
     radial-gradient(1200px 520px at 78% -8%, var(--page-glow-1), transparent 60%),
     radial-gradient(900px 500px at 12% 0%, var(--page-glow-2), transparent 55%),
-    var(--page);
+    var(--app);
   background-attachment: fixed;
 }
-@media (max-width: 720px) { body { padding: 10px; } }
-
-/* 整個 App 收進一張大圓角卡片，浮在漸層頁面上 */
-.app-shell {
-  max-width: 1620px; margin: 0 auto;
-  background: var(--app); border: 1px solid var(--bd); border-radius: 28px;
-  padding: 18px; box-shadow: 0 40px 100px rgba(0,0,0,.42);
-  display: flex; flex-direction: column; min-height: calc(100vh - 44px);
-}
-@media (max-width: 720px) { .app-shell { border-radius: 20px; padding: 12px; } }
+@media (max-width: 720px) { .app-shell { padding: 12px; } }
 h1, h2, h3 { font-weight: 700; letter-spacing: -.01em; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 a { color: var(--accent); text-decoration: none; }
@@ -423,6 +421,7 @@ select option { background: #15160f; color: var(--ink); }
 .legend-chips li:hover { background: var(--panel-3); }
 .legend-chips li.off { opacity: .4; }
 .legend-chips li.off::after { content: "（隱藏）"; font-size: 10px; color: var(--dim); }
+[data-lang="en"] .legend-chips li.off::after { content: " (hidden)"; }
 .legend-chips .cnt { color: var(--dim); font-size: 11px; font-family: var(--mono); }
 .legend-hint { font-size: 12px; color: var(--dim-2); }
 .swatch { flex: none; }
@@ -500,6 +499,18 @@ select option { background: #15160f; color: var(--ink); }
 #side-panel-toggle.active { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 body.has-side-panel { padding-right: 340px; }
 @media (max-width: 720px) { .side-panel { width: 100%; } body.has-side-panel { padding-right: 0; } }
+
+/* 資料集總覽抽屜 */
+.drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 54; }
+.overview-drawer { width: 384px; z-index: 56; }
+@media (max-width: 720px) { .overview-drawer { width: 100%; } }
+#overview-drawer-body { padding: 16px; overflow: auto; }
+.drawer-stats { display: flex; flex-direction: column; gap: 14px; }
+.drawer-gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.drawer-gauges .stat-card { padding: 14px; }
+.drawer-gauges .gauge-wrap svg { width: 96px; height: 96px; }
+.overview-drawer .summary-panel { border: none; background: transparent; padding: 0; }
+.overview-drawer .stat-big { font-size: 40px; }
 
 /* 建立精靈 */
 .builder { flex: 1; display: grid; grid-template-columns: 400px 1fr; gap: var(--gap); padding: var(--gap); min-height: 0; overflow: hidden; }

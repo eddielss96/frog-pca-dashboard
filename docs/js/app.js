@@ -23,19 +23,19 @@
   }
 
   function loadVia(promise, label) {
-    setStatus((label || "載入中") + "…", "loading");
+    var T = function (k, p) { return FD.t ? FD.t(k, p) : k; };
+    setStatus(T("st.loading", { label: label || T("st.loadingDefault") }), "loading");
     return promise.then(function (model) {
       Store.setData(model);
       var subtitle = document.getElementById("dataset-subtitle");
-      if (model.dataset.title) subtitle.textContent = model.dataset.title;
+      if (subtitle && model.dataset.title) subtitle.textContent = model.dataset.title;
       var rep = model.joinReport;
-      setStatus("已載入：" + rep.nTaxa + " 物種、" + model.viewOrder.length +
-        " 個 PCA 視圖、" + rep.nTree + " 個樹葉（join key 一致 ✓）", "success");
+      setStatus(T("st.loaded", { n: rep.nTaxa, v: model.viewOrder.length, tree: rep.nTree }), "success");
       showDashboard();
       setTimeout(function () { setStatus(null); }, 4000);
     }).catch(function (e) {
       console.error(e);
-      setStatus("載入失敗：" + (e.userFacing ? e.message : (e.message || e)), "error");
+      setStatus(T("st.failed", { msg: (e.userFacing ? e.message : (e.message || e)) }), "error");
     });
   }
 
@@ -127,7 +127,7 @@
     var expandTree = document.querySelector(".expand-tree");
     if (expandTree) expandTree.addEventListener("click", function () {
       var expanded = FD.TreeView.toggleExpandAll();
-      expandTree.textContent = expanded ? "收合深層" : "展開全部";
+      expandTree.textContent = FD.t(expanded ? "tree.collapse" : "tree.expandAll");
     });
     var modeSeg = document.getElementById("tree-mode");
     if (modeSeg) modeSeg.addEventListener("click", function (e) {
@@ -159,7 +159,7 @@
         });
         if (labelsBtn) labelsBtn.classList.toggle("active", !!tv.labelsOn);
         var ex = document.querySelector(".expand-tree");
-        if (ex) ex.textContent = tv.expandedAll ? "收合深層" : "展開全部";
+        if (ex) ex.textContent = FD.t(tv.expandedAll ? "tree.collapse" : "tree.expandAll");
       }, 60);
     });
   }

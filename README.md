@@ -49,41 +49,15 @@
 - Dashboard 右上「資料集」選單切換；網址 `#dataset=<id>` 可記憶/分享。
 - 載入優先序（`docs/js/app.js`）：烤入資料（單站自包含）→ `catalog.json`（gallery）→ 上傳畫面。
 
-### 新增一個資料集（標準流程）
-1. 準備「已算好的 PC 分數 CSV」（每列一物種：id 欄 + PC1..PCn）+ 分類欄位；有樹再加
-   Newick（tip 標籤 = species_id）。
-2. 產生統一 Zip：用**建立精靈**（`docs/builder.html`）或仿 `exporters/csv/export_csv.py` 腳本。
-3. 放進 gallery：zip 複製到 `docs/data/<id>.zip`，在 `docs/data/catalog.json` 的
-   `datasets` 加一筆。
-4. 驗證：`python3 exporters/common/unified_zip.py validate docs/data/<id>.zip`；本地開站測試切換。
-5. commit、push；Pages 自動部署。
+### 用建立精靈新增自己的資料集
+對已算好的 PCA（CSV）而言，`docs/builder.html`（**建立精靈**）可全程在瀏覽器內完成：
+上傳「PC 分數 CSV（每列一物種：id 欄 + PC1..PCn）+ 分類欄位」（有樹再加 Newick，tip 標籤
+= species_id）→ 互動預覽 → 下載統一 Zip / 打包成可部署網站。不需任何後端。
 
-## 快速開始
+## 本地預覽
 ```bash
-# 0) 一次性環境（Ubuntu）：R + geomorph
-bash scripts/setup_r_env.sh
-
-# 1) 重現分析、建立基準（青蛙案例）
-R_LIBS_USER=~/Rlib Rscript scripts/phase1_reproduce.R
-
-# 2) 產生統一 Zip 並驗證
-R_LIBS_USER=~/Rlib Rscript exporters/r/export_r.R
-python3 exporters/python/export_python.py
-python3 exporters/csv/export_csv.py exporters/csv/example_frog/config.json
-python3 tests/test_exporters.py
-
-# 3) 本地預覽 Dashboard（含 gallery 切換）
 cd docs && python3 -m http.server 8099   # 開 http://127.0.0.1:8099/
-
-# 4)（可選）烤入單一資料集、產生自包含靜態包
-scripts/bake_site.sh build/frog_R.zip    # -> docs/data/baked.js, build/*-site.zip
 ```
-
-## 數值重現（青蛙案例，檢查點②）
-| 視圖 | 本專案 | 論文 |
-|------|--------|------|
-| 成體 4 PC 累積 | **82.479%** | 82.479%（完全吻合）|
-| 蝌蚪 4 PC 累積 | 80.634% | 80.091%（差 +0.54pp，源於 geomorph 版本）|
 
 ## 部署
 見 [`docs/deploy_github_pages.md`](docs/deploy_github_pages.md)。`docs/` 由
@@ -91,17 +65,4 @@ scripts/bake_site.sh build/frog_R.zip    # -> docs/data/baked.js, build/*-site.z
 `docs/`，不碰整個 repo。
 
 ## 函式庫（全本地，禁 CDN）
-plotly.js 2.35.2 · JSZip 3.10.1 · phylocanvas.gl 1.64.0（含 deck.gl/luma.gl，
-esbuild 打包）。重建：`scripts/vendor_libs.sh`。
-
-## 目錄
-```
-data/         原始檔（各案例）
-scripts/      環境安裝、階段一重現、vendoring、烤站
-baseline/     階段一基準輸出（PC 分數、變異解釋）
-exporters/    R / Python / CSV 匯出器 + 共用驗證器
-build/        產出的統一 Zip 與靜態包
-docs/         Dashboard 靜態網站（GitHub Pages 根）
-  docs/data/  catalog.json（gallery 目錄）+ 各案例 <id>.zip
-tests/        匯出器等價測試、Dashboard e2e
-```
+plotly.js 2.35.2 · JSZip 3.10.1 · phylocanvas.gl 1.64.0（含 deck.gl/luma.gl，esbuild 打包）。

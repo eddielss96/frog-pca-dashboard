@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-theme="dark" data-accent="lime">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>建立精靈 — 上傳 PCA 資料，打包成自己的無伺服器互動網頁</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='11' cy='15' r='7' fill='%230072B2'/%3E%3Crect x='17' y='9' width='12' height='12' fill='%23E69F00'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function(){try{var r=document.documentElement,p=localStorage.getItem('mp-themepref')||'auto',
+      a=localStorage.getItem('mp-accent')||'lime',
+      d=p==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p;
+      r.setAttribute('data-theme',d);r.setAttribute('data-accent',a);}catch(e){}})();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=7" />
   <script src="vendor/jszip/jszip-3.10.1.min.js"></script>
   <script src="vendor/plotly/plotly-2.35.2.min.js"></script>
   <script src="vendor/phylocanvas/phylocanvas.gl-1.64.0.bundle.js"></script>

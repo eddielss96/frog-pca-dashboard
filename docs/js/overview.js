@@ -4,7 +4,7 @@
   "use strict";
   var FD = global.FrogDash, Store = FD.Store;
   var head, recentSection, recentGrid, recent = [];
-  var GAUGE_COLORS = ["#d4fb3c", "#56B4E9", "#009E73", "#E69F00", "#CC79A7"];
+  var GAUGE_COLORS = ["var(--accent)", "#56B4E9", "#009E73", "#E69F00", "#CC79A7"];
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
@@ -35,8 +35,8 @@
     var C = 2 * Math.PI * 40, track = (0.75 * C).toFixed(1) + " " + C.toFixed(1),
         val = (0.75 * C * p).toFixed(1) + " " + C.toFixed(1);
     return '<div class="gauge-wrap"><svg viewBox="0 0 100 100">' +
-      '<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + track + '" transform="rotate(135 50 50)"/>' +
-      '<circle cx="50" cy="50" r="40" fill="none" stroke="' + color + '" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + val + '" transform="rotate(135 50 50)"/>' +
+      '<circle cx="50" cy="50" r="40" fill="none" style="stroke:var(--track)" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + track + '" transform="rotate(135 50 50)"/>' +
+      '<circle cx="50" cy="50" r="40" fill="none" style="stroke:' + color + '" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + val + '" transform="rotate(135 50 50)"/>' +
       '</svg><div class="gauge-center"><div class="g-val">' + pct(p) + '<span style="font-size:15px;">%</span></div><div class="g-cap">前 4 主成分</div></div></div>';
   }
 
@@ -119,7 +119,7 @@
       '</div>' +
 
       '<aside class="summary-panel">' +
-        '<div class="sp-title"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4fb3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4 3.4 6.9 8 8 4.6-1.1 8-4 8-8V7z"/></svg>資料集摘要</span></div>' +
+        '<div class="sp-title"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="stroke:var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4 3.4 6.9 8 8 4.6-1.1 8-4 8-8V7z"/></svg>資料集摘要</span></div>' +
         '<div class="sp-src"><div class="k">來源論文</div><div class="v">' + esc(authorYear || ds.title || "—") + '</div>' + doiHTML + '</div>' +
         '<div class="sp-sec">主成分變異解釋 · ' + esc(v0.label || v0.id) + '</div><div class="sp-vars">' + varBars + '</div>' +
         '<div class="sp-divider"></div>' +

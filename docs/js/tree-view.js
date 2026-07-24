@@ -4,6 +4,26 @@
   "use strict";
   var Store = global.FrogDash.Store;
 
+  // 讀 CSS 主題變數 → phylocanvas 用的 [r,g,b,a]（0-255），支援 #hex / rgb() / rgba()
+  function colorToRgba(str, fb) {
+    if (!str) return fb;
+    str = str.trim();
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(str);
+    if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16), 255];
+    m = /^#?([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(str);
+    if (m) return [parseInt(m[1] + m[1], 16), parseInt(m[2] + m[2], 16), parseInt(m[3] + m[3], 16), 255];
+    m = /rgba?\(([^)]+)\)/i.exec(str);
+    if (m) {
+      var p = m[1].split(",").map(function (s) { return parseFloat(s); });
+      return [Math.round(p[0]), Math.round(p[1]), Math.round(p[2]), Math.round((p[3] == null ? 1 : p[3]) * 255)];
+    }
+    return fb;
+  }
+  function treeColor(varName, fb) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(varName);
+    return colorToRgba(v, fb);
+  }
+
   function hasWebGL() {
     try {
       var c = document.createElement("canvas");
@@ -139,11 +159,11 @@
         fontSize: this.fontSize,
         interactive: true,
         nodeSize: this.nTips > 200 ? 4 : 6,
-        highlightColour: [212, 251, 60, 255],       // 萊姆綠高亮，配深色主題
-        strokeColour: [255, 255, 255, 105],          // 淺色分支（深底可見）
-        lineColour: [255, 255, 255, 105],
-        fontColour: [201, 203, 190, 255],            // 淺色物種標籤
-        backgroundColour: [0, 0, 0, 0],              // 透明；由 .tree-host 提供深色底
+        highlightColour: treeColor("--accent", [212, 251, 60, 255]),  // accent 高亮
+        strokeColour: treeColor("--tree", [255, 255, 255, 105]),       // 分支（隨主題深/淺）
+        lineColour: treeColor("--tree", [255, 255, 255, 105]),
+        fontColour: treeColor("--text-3", [201, 203, 190, 255]),       // 物種標籤
+        backgroundColour: [0, 0, 0, 0],              // 透明；由 .tree-host 提供底色
         padding: this.layout === "cr" ? 24 : 12
       });
 

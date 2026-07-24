@@ -4,6 +4,22 @@
   "use strict";
   var Store = global.FrogDash.Store, Groups = global.FrogDash.Groups;
 
+  // 由目前主題（CSS 變數）取得 Plotly 用色，深/淺主題與 accent 皆自動套用
+  function cssvar(n, fb) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(n);
+    return (v && v.trim()) || fb;
+  }
+  function themeColors() {
+    return {
+      grid: cssvar("--grid", "rgba(255,255,255,.06)"),
+      zero: cssvar("--grid-strong", "rgba(255,255,255,.14)"),
+      fg: cssvar("--muted", "#8f9184"),
+      hoverBg: cssvar("--surface", "#15160f"),
+      hoverFg: cssvar("--hover-fg", "#f3f4ee"),
+      hoverBd: cssvar("--bd2", "rgba(255,255,255,.15)")
+    };
+  }
+
   function PCAView(opts) {
     this.viewId = opts.viewId;
     this.plotEl = document.getElementById(opts.plotId);
@@ -92,7 +108,8 @@
       tr.y = tr.customdata.map(function (sid) { return view.scores[sid][py]; });
     });
     var rng = this.computeRange(px, py);
-    var GRID = "rgba(255,255,255,.06)", ZERO = "rgba(255,255,255,.14)", FG = "#8f9184";
+    var T = themeColors();
+    var GRID = T.grid, ZERO = T.zero, FG = T.fg;
     var layout = {
       margin: { l: 44, r: 10, t: 8, b: 38 },
       font: { color: FG, family: "Archivo, system-ui, sans-serif", size: 11 },
@@ -102,7 +119,7 @@
                zeroline: true, zerolinecolor: ZERO, autorange: false, range: rng.y.slice() },
       showlegend: false, hovermode: "closest", dragmode: "pan",
       paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-      hoverlabel: { bgcolor: "#15160f", bordercolor: "rgba(255,255,255,.15)", font: { color: "#f3f4ee", family: "Archivo" } }
+      hoverlabel: { bgcolor: T.hoverBg, bordercolor: T.hoverBd, font: { color: T.hoverFg, family: "Archivo" } }
     };
     var config = { displayModeBar: false, responsive: true, scrollZoom: true };
     var self = this;
@@ -199,4 +216,5 @@
   global.FrogDash = global.FrogDash || {};
   global.FrogDash.initPCA = init;
   global.FrogDash.pcaViews = views;
+  global.FrogDash.redrawPCA = function () { Object.keys(views).forEach(function (k) { views[k].draw(); }); };
 })(window);
